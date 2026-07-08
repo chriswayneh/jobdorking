@@ -100,3 +100,7 @@ npx serve .
 | `og-image.png` | Social share preview image (1200×630)                 |
 | `robots.txt`   | Crawler access rules + sitemap pointer                |
 | `sitemap.xml`  | XML sitemap for search engines                        |
+
+## Author
+
+Built by [Chris Hickman](https://www.linkedin.com/in/chriswhickman/).
