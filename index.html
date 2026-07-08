@@ -290,7 +290,7 @@
       "name": "Does JobDorking filter out jobs in other countries?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The \"United States only\" toggle adds an intext:\"United States\" operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter."
+        "text": "The \"US Only\" toggle adds an intext:\"United States\" operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter."
       }
     }
   ]
@@ -360,9 +360,9 @@
     <div class="field">
       <label>Location</label>
       <div class="pill-group">
-        <button type="button" class="pill active" id="usOnlyToggle">United States only</button>
+        <button type="button" class="pill active" id="usOnlyToggle">US Only</button>
       </div>
-      <span class="field-hint">Requires the posting to mention "United States," to filter out listings for other countries. Best-effort — JobDorking builds the query but doesn't fetch or inspect results, so it can't guarantee every match is US-based.</span>
+      <span class="field-hint">We'll filter out whatever Google returns to keep it US-based.</span>
     </div>
   </section>
 
@@ -435,7 +435,7 @@
       </details>
       <details class="faq-item">
         <summary>Does JobDorking filter out jobs in other countries?</summary>
-        <p>The "United States only" toggle adds an <code>intext:"United States"</code> operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter.</p>
+        <p>The "US Only" toggle adds an <code>intext:"United States"</code> operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter.</p>
       </details>
     </div>
   </section>
