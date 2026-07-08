@@ -101,6 +101,10 @@ npx serve .
 | `robots.txt`   | Crawler access rules + sitemap pointer                |
 | `sitemap.xml`  | XML sitemap for search engines                        |
 
+## License
+
+[MIT](LICENSE)
+
 ## Author
 
 Built by [Chris Hickman](https://www.linkedin.com/in/chriswhickman/).
