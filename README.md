@@ -8,6 +8,15 @@ opens it (or copies it) for you. No sign-up, no scraping, no backend.
 **Live:** https://chriswayneh.github.io/jobdorking/ (custom domain
 `jobdorking.com` is purchased but not yet wired up — see [Deployment](#deployment) below)
 
+## Background
+
+This project started as a personal tool: a minimalist, single-page utility
+built to speed up my own job search by turning Google's advanced search
+operators into something usable without memorizing syntax. It worked well
+enough, on its own merits, to be worth developing into a proper product —
+with a real design system, structured data and SEO groundwork for organic
+discovery, and a foundation for eventual monetization.
+
 ## How it works
 
 The whole app is one static file, `index.html` — no build step, no
