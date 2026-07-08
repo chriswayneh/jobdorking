@@ -3,11 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobDorking — Search every job board with one Google query</title>
-<meta name="description" content="Build a precise Google search-operator query from your target job titles, posting window, and preferred job boards. No sign-up, no scraping.">
-<meta property="og:title" content="JobDorking — Search every job board with one Google query">
-<meta property="og:description" content="Build a precise Google search-operator query from your target titles, posting window, and preferred job boards.">
+<title>JobDorking — Search Every Job Board With One Google Dork</title>
+<meta name="description" content="Free Google dork generator for job search. Set titles, window, and boards, and JobDorking builds the exact search query. No sign-up, no scraping.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#195AFE">
+<link rel="canonical" href="https://jobdorking.com/">
+
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://jobdorking.com/">
+<meta property="og:site_name" content="JobDorking">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="JobDorking — Search Every Job Board With One Google Dork">
+<meta property="og:description" content="Free Google dork generator for job search. Set titles, window, and boards, and JobDorking builds the exact search query. No sign-up, no scraping.">
+<meta property="og:image" content="https://jobdorking.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="JobDorking — search every job board with one Google query">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JobDorking — Search Every Job Board With One Google Dork">
+<meta name="twitter:description" content="Free Google dork generator for job search. No sign-up, no scraping.">
+<meta name="twitter:image" content="https://jobdorking.com/og-image.png">
+
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23195AFE'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -167,7 +184,109 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
+
+  .content-section { padding: 48px 0 0; }
+  .content-section h2 { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.92em; color: var(--accent-text);
+    background: var(--accent-soft); padding: 1px 5px; border-radius: 4px;
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+  .steps li {
+    display: flex; gap: 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .step-num {
+    flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft);
+    color: var(--accent-text); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13.5px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-body h3 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+  .step-body p { font-size: 14px; line-height: 1.6; color: var(--ink-dim); margin: 0; }
+
+  .faq-list { display: flex; flex-direction: column; gap: 10px; }
+  .faq-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 4px 20px;
+  }
+  .faq-item summary {
+    font-family: 'DM Sans', sans-serif; font-size: 14.5px; font-weight: 600; padding: 16px 0;
+    cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+'; font-size: 20px; font-weight: 400; color: var(--ink-dim); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item p { font-size: 14px; line-height: 1.65; color: var(--ink-dim); margin: 0 0 18px; }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "JobDorking",
+  "url": "https://jobdorking.com/",
+  "description": "Free Google dork generator for job hunting. Build a precise site: intitle: after: search-operator query from your target job titles, posting window, and preferred job boards.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is a Google dork?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Google dork is a search built with Google's advanced operators, like site:, intitle:, and after:, to find pages a normal keyword search misses. JobDorking chains together the operators job hunters use most, so you don't have to memorize the syntax."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which job boards can JobDorking search?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "LinkedIn, Indeed, Dice, Greenhouse, Lever, Ashby, Workday, and ZipRecruiter out of the box. Leave every source unchecked to search all of Google, unrestricted to any site."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does JobDorking scrape or store job listings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. JobDorking only builds the search-engine query in your browser. It doesn't crawl job boards, store postings, or require an account, and results come straight from Google's own index."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why do I see fewer results with the 24h filter?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Google's after: operator filters by the date a page was indexed, not necessarily when it was posted, so very recent listings can lag behind by a day or two. Widening the window to 3 days or 1 week usually surfaces them."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is JobDorking free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. JobDorking is free to use, with no sign-up required to build or run your search query."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -244,6 +363,59 @@
       <div class="code-card-body" id="queryText"></div>
     </div>
     <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
+  </section>
+
+  <section class="content-section">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <div class="step-body">
+          <h3>Enter your titles</h3>
+          <p>Comma-separate the roles you're targeting. JobDorking matches them against each page's title with the <code>intitle:</code> operator, so results stay relevant.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <div class="step-body">
+          <h3>Set a window and boards</h3>
+          <p>Pick how recent postings should be, and optionally restrict the search to the job boards you trust with <code>site:</code>.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <div class="step-body">
+          <h3>Search on Google</h3>
+          <p>Open the built query on Google, or copy it and run it anywhere Google search works.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="content-section">
+    <h2>Frequently asked questions</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>What is a Google dork?</summary>
+        <p>A Google dork is a search built with Google's advanced operators, like <code>site:</code>, <code>intitle:</code>, and <code>after:</code>, to find pages a normal keyword search misses. JobDorking chains together the operators job hunters use most, so you don't have to memorize the syntax.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Which job boards can JobDorking search?</summary>
+        <p>LinkedIn, Indeed, Dice, Greenhouse, Lever, Ashby, Workday, and ZipRecruiter out of the box. Leave every source unchecked to search all of Google, unrestricted to any site.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Does JobDorking scrape or store job listings?</summary>
+        <p>No. JobDorking only builds the search-engine query in your browser. It doesn't crawl job boards, store postings, or require an account, and results come straight from Google's own index.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why do I see fewer results with the 24h filter?</summary>
+        <p>Google's <code>after:</code> operator filters by the date a page was indexed, not necessarily when it was posted, so very recent listings can lag behind by a day or two. Widening the window to 3 days or 1 week usually surfaces them.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is JobDorking free?</summary>
+        <p>Yes. JobDorking is free to use, with no sign-up required to build or run your search query.</p>
+      </details>
+    </div>
   </section>
 
   <footer class="site-footer">
