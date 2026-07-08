@@ -206,8 +206,8 @@
     <div class="field">
       <label>Posted within</label>
       <div class="segmented" id="timeframe">
-        <button type="button" class="seg-btn" data-value="1">24h</button>
-        <button type="button" class="seg-btn active" data-value="7">Week</button>
+        <button type="button" class="seg-btn active" data-value="1">24h</button>
+        <button type="button" class="seg-btn" data-value="7">Week</button>
         <button type="button" class="seg-btn" data-value="30">Month</button>
         <button type="button" class="seg-btn" data-value="90">3 months</button>
         <button type="button" class="seg-btn" data-value="365">Year</button>
@@ -289,7 +289,7 @@
   SITES.forEach(function (site) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'pill active';
+    btn.className = 'pill';
     btn.dataset.value = site.value;
     btn.textContent = site.label;
     btn.addEventListener('click', function () { btn.classList.toggle('active'); render(); });
@@ -298,7 +298,7 @@
 
   // Timeframe
   const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
-  let selectedDays = 7;
+  let selectedDays = 1;
   segBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       segBtns.forEach(function (b) { b.classList.remove('active'); });
