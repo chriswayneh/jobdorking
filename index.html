@@ -160,6 +160,7 @@
   .btn-open:hover { opacity: 0.88; }
   .btn-open:active { transform: scale(0.99); }
   button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .result-hint { text-align: center; margin-top: 10px; }
 
   .site-footer {
     margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border);
@@ -363,6 +364,7 @@
       <div class="code-card-body" id="queryText"></div>
     </div>
     <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
+    <span class="field-hint result-hint">Results are restricted to the United States.</span>
   </section>
 
   <section class="content-section">
@@ -596,7 +598,8 @@
     const tokens = buildTokens();
     if (!tokens) return;
     const q = tokensToPlain(tokens);
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
+    const params = new URLSearchParams({ q: q, gl: 'us', cr: 'countryUS' });
+    window.open('https://www.google.com/search?' + params.toString(), '_blank', 'noopener');
   });
 
   render();
