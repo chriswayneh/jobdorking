@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobDorking — Search every job board with one Google query</title>
+<meta name="description" content="Build a precise Google search-operator query from your target job titles, posting window, and preferred job boards. No sign-up, no scraping.">
+<meta property="og:title" content="JobDorking — Search every job board with one Google query">
+<meta property="og:description" content="Build a precise Google search-operator query from your target titles, posting window, and preferred job boards.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B8790A'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-2: #F1F0EA;
+    --border: #E2E1DA;
+    --ink: #17181A;
+    --ink-dim: #68686C;
+    --accent: #B8790A;
+    --accent-text: #8A5C08;
+    --accent-soft: rgba(184, 121, 10, 0.10);
+    --accent-contrast: #1A1200;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121214;
+      --surface: #1B1B1E;
+      --surface-2: #222226;
+      --border: #302F33;
+      --ink: #F2F1ED;
+      --ink-dim: #97979C;
+      --accent: #E8A83D;
+      --accent-text: #E8A83D;
+      --accent-soft: rgba(232, 168, 61, 0.14);
+      --accent-contrast: #1A1200;
+    }
+  }
+  [data-theme="dark"] {
+    --bg: #121214;
+    --surface: #1B1B1E;
+    --surface-2: #222226;
+    --border: #302F33;
+    --ink: #F2F1ED;
+    --ink-dim: #97979C;
+    --accent: #E8A83D;
+    --accent-text: #E8A83D;
+    --accent-soft: rgba(232, 168, 61, 0.14);
+    --accent-contrast: #1A1200;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    transition: background-color .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 20px 80px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 28px 0; }
+  .wordmark { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 500; }
+  .wordmark .dim { color: var(--ink-dim); }
+
+  .theme-toggle {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: border-color .15s ease, background-color .2s ease;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+
+  .hero { padding: 28px 0 40px; }
+  .kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.06em;
+    color: var(--accent-text); margin: 0 0 14px; text-transform: uppercase;
+  }
+  h1 { font-size: 40px; line-height: 1.15; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em; }
+  .hero-sub { font-size: 16px; line-height: 1.6; color: var(--ink-dim); max-width: 520px; margin: 0; }
+
+  .tool-panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px; margin-bottom: 18px; transition: background-color .2s ease, border-color .2s ease;
+  }
+  .field { margin-bottom: 22px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .field-hint { display: block; font-size: 12.5px; color: var(--ink-dim); margin-top: 6px; }
+
+  input[type=text] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--ink);
+    padding: 12px 14px; border-radius: var(--radius-sm); font-size: 14.5px; font-family: 'Space Grotesk', sans-serif;
+    transition: background-color .2s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  input::placeholder { color: var(--ink-dim); opacity: 0.7; }
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .segmented, .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seg-btn, .pill {
+    font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 500;
+    padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--ink-dim); cursor: pointer; transition: all .15s ease;
+  }
+  .seg-btn.active, .pill.active { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+  .seg-btn:hover, .pill:hover { border-color: var(--accent); }
+
+  .code-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 14px; transition: background-color .2s ease, border-color .2s ease;
+  }
+  .code-card-head {
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 16px;
+    background: var(--surface-2); border-bottom: 1px solid var(--border);
+    transition: background-color .2s ease, border-color .2s ease;
+  }
+  .code-card-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-dim); }
+  .icon-btn {
+    width: 30px; height: 30px; border-radius: var(--radius-sm); border: 1px solid transparent;
+    background: transparent; color: var(--ink-dim); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .icon-btn:hover { border-color: var(--border); color: var(--ink); }
+  .icon-btn svg { width: 15px; height: 15px; }
+
+  .code-card-body {
+    padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.75;
+    color: var(--ink); white-space: pre-wrap; word-break: break-word; min-height: 48px;
+  }
+  .kw { color: var(--accent-text); font-weight: 600; }
+
+  .btn-open {
+    width: 100%; padding: 15px 22px; background: var(--accent); color: var(--accent-contrast);
+    border: none; border-radius: var(--radius); font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .15s ease, transform .1s ease;
+  }
+  .btn-open:hover { opacity: 0.88; }
+  .btn-open:active { transform: scale(0.99); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .site-footer {
+    margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 12.5px; color: var(--ink-dim); line-height: 1.6; transition: border-color .2s ease;
+  }
+
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--accent); color: var(--accent-contrast); padding: 10px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 30px; }
+    .tool-panel { padding: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="wordmark">jobdorking<span class="dim">.com</span></div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <section class="hero">
+    <p class="kicker">Google search operators, built for you</p>
+    <h1>Every job board. One search.</h1>
+    <p class="hero-sub">Set your target titles, a posting window, and the boards you trust. JobDorking assembles the exact Google query and hands you the results.</p>
+  </section>
+
+  <section class="tool-panel">
+    <div class="field">
+      <label for="titles">Job titles</label>
+      <input type="text" id="titles" placeholder="Product Manager, Software Engineer, UX Designer">
+      <span class="field-hint">Comma-separated. Matched against each posting's page title.</span>
+    </div>
+
+    <div class="field">
+      <label>Posted within</label>
+      <div class="segmented" id="timeframe">
+        <button type="button" class="seg-btn" data-value="1">24h</button>
+        <button type="button" class="seg-btn active" data-value="7">Week</button>
+        <button type="button" class="seg-btn" data-value="30">Month</button>
+        <button type="button" class="seg-btn" data-value="90">3 months</button>
+        <button type="button" class="seg-btn" data-value="365">Year</button>
+        <button type="button" class="seg-btn" data-value="0">Any time</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Sources</label>
+      <div class="pill-group" id="siteGrid"></div>
+    </div>
+  </section>
+
+  <section class="result-panel">
+    <div class="code-card">
+      <div class="code-card-head">
+        <span class="code-card-label">Search query</span>
+        <button class="icon-btn" id="copyBtn" type="button" aria-label="Copy search query">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="code-card-body" id="queryText"></div>
+    </div>
+    <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
+  </section>
+
+  <footer class="site-footer">
+    <p>Results depend on Google's index, not the boards directly, so postings can lag by a few days. JobDorking builds the query, it doesn't host or scrape listings itself.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+  // Theme handling: follows system preference by default, manual toggle overrides for the session
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const iconSun = document.getElementById('iconSun');
+  const iconMoon = document.getElementById('iconMoon');
+  let currentTheme = null;
+
+  function getSystemPrefersDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function applyTheme() {
+    if (currentTheme === null) root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', currentTheme);
+    const isDark = currentTheme ? currentTheme === 'dark' : getSystemPrefersDark();
+    iconSun.style.display = isDark ? 'block' : 'none';
+    iconMoon.style.display = isDark ? 'none' : 'block';
+  }
+  themeToggle.addEventListener('click', function () {
+    const isDarkNow = currentTheme ? currentTheme === 'dark' : getSystemPrefersDark();
+    currentTheme = isDarkNow ? 'light' : 'dark';
+    applyTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+      if (currentTheme === null) applyTheme();
+    });
+  }
+  applyTheme();
+
+  // Sources
+  const SITES = [
+    { label: 'LinkedIn', value: 'site:linkedin.com/jobs' },
+    { label: 'Indeed', value: 'site:indeed.com' },
+    { label: 'Dice', value: 'site:dice.com' },
+    { label: 'Greenhouse', value: 'site:boards.greenhouse.io' },
+    { label: 'Lever', value: 'site:jobs.lever.co' },
+    { label: 'Ashby', value: 'site:jobs.ashbyhq.com' },
+    { label: 'Workday', value: 'site:myworkdayjobs.com' },
+    { label: 'ZipRecruiter', value: 'site:ziprecruiter.com' }
+  ];
+  const siteGrid = document.getElementById('siteGrid');
+  SITES.forEach(function (site) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pill active';
+    btn.dataset.value = site.value;
+    btn.textContent = site.label;
+    btn.addEventListener('click', function () { btn.classList.toggle('active'); render(); });
+    siteGrid.appendChild(btn);
+  });
+
+  // Timeframe
+  const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
+  let selectedDays = 7;
+  segBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      segBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      selectedDays = parseInt(btn.dataset.value, 10);
+      render();
+    });
+  });
+
+  const titlesInput = document.getElementById('titles');
+  const queryText = document.getElementById('queryText');
+  const copyBtn = document.getElementById('copyBtn');
+  const openBtn = document.getElementById('openBtn');
+  const toast = document.getElementById('toast');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function computeAfterDate(days) {
+    if (!days) return null;
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function activeSites() {
+    return Array.from(siteGrid.querySelectorAll('.pill.active')).map(function (b) { return b.dataset.value; });
+  }
+
+  function buildTokens() {
+    const titles = titlesInput.value.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+    if (!titles.length) return null;
+
+    const sites = activeSites();
+    const tokens = [];
+
+    if (sites.length > 0) {
+      if (sites.length > 1) tokens.push({ k: false, v: '(' });
+      sites.forEach(function (s, i) {
+        if (i > 0) tokens.push({ k: true, v: ' OR ' });
+        const idx = s.indexOf(':');
+        tokens.push({ k: true, v: s.slice(0, idx + 1) });
+        tokens.push({ k: false, v: s.slice(idx + 1) });
+      });
+      if (sites.length > 1) tokens.push({ k: false, v: ')' });
+      tokens.push({ k: false, v: ' ' });
+    }
+
+    if (titles.length > 1) tokens.push({ k: false, v: '(' });
+    titles.forEach(function (t, i) {
+      if (i > 0) tokens.push({ k: true, v: ' OR ' });
+      tokens.push({ k: true, v: 'intitle:' });
+      tokens.push({ k: false, v: '"' + t + '"' });
+    });
+    if (titles.length > 1) tokens.push({ k: false, v: ')' });
+
+    const afterDate = computeAfterDate(selectedDays);
+    if (afterDate) {
+      tokens.push({ k: false, v: ' ' });
+      tokens.push({ k: true, v: 'after:' });
+      tokens.push({ k: false, v: afterDate });
+    }
+    return tokens;
+  }
+
+  function tokensToPlain(tokens) { return tokens.map(function (t) { return t.v; }).join(''); }
+  function tokensToHTML(tokens) {
+    return tokens.map(function (t) {
+      const esc = escapeHtml(t.v);
+      return t.k ? '<span class="kw">' + esc + '</span>' : esc;
+    }).join('');
+  }
+
+  function render() {
+    const tokens = buildTokens();
+    if (tokens) {
+      queryText.innerHTML = tokensToHTML(tokens);
+    } else {
+      queryText.textContent = 'Add a job title above to build your query…';
+    }
+    openBtn.disabled = !tokens;
+    copyBtn.disabled = !tokens;
+  }
+
+  titlesInput.addEventListener('input', render);
+
+  let toastTimer;
+  function showToast() {
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+
+  copyBtn.addEventListener('click', async function () {
+    const tokens = buildTokens();
+    if (!tokens) return;
+    const q = tokensToPlain(tokens);
+    try {
+      await navigator.clipboard.writeText(q);
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = q;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    showToast();
+  });
+
+  openBtn.addEventListener('click', function () {
+    const tokens = buildTokens();
+    if (!tokens) return;
+    const q = tokensToPlain(tokens);
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
+  });
+
+  render();
+</script>
+</body>
+</html>
