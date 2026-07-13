@@ -160,7 +160,6 @@
   .btn-open:hover { opacity: 0.88; }
   .btn-open:active { transform: scale(0.99); }
   button:disabled { opacity: 0.45; cursor: not-allowed; }
-  .result-hint { text-align: center; margin-top: 10px; }
 
   .site-footer {
     margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border);
@@ -284,14 +283,6 @@
         "@type": "Answer",
         "text": "Yes. JobDorking is free to use, with no sign-up required to build or run your search query."
       }
-    },
-    {
-      "@type": "Question",
-      "name": "Does JobDorking filter out jobs in other countries?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "The \"US Only\" toggle adds an intext:\"United States\" operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter."
-      }
     }
   ]
 }
@@ -356,14 +347,6 @@
       <div class="pill-group" id="siteGrid"></div>
       <span class="field-hint">Optional. None selected searches all of Google, unrestricted to any site.</span>
     </div>
-
-    <div class="field">
-      <label>Location</label>
-      <div class="pill-group">
-        <button type="button" class="pill active" id="usOnlyToggle">US Only</button>
-      </div>
-      <span class="field-hint">We'll filter out whatever Google returns to keep it US-based.</span>
-    </div>
   </section>
 
   <section class="result-panel">
@@ -380,7 +363,6 @@
       <div class="code-card-body" id="queryText"></div>
     </div>
     <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
-    <span class="field-hint result-hint" id="resultHint">Results are filtered to the United States.</span>
   </section>
 
   <section class="content-section">
@@ -432,10 +414,6 @@
       <details class="faq-item">
         <summary>Is JobDorking free?</summary>
         <p>Yes. JobDorking is free to use, with no sign-up required to build or run your search query.</p>
-      </details>
-      <details class="faq-item">
-        <summary>Does JobDorking filter out jobs in other countries?</summary>
-        <p>The "US Only" toggle adds an <code>intext:"United States"</code> operator, requiring the page to mention the US, and the Open in Google button also restricts by Google's own country setting. Neither is a guarantee: JobDorking builds the query but doesn't fetch or inspect results, so a US-hosted job board can still list roles based elsewhere. Turn the toggle off to search without any location filter.</p>
       </details>
     </div>
   </section>
@@ -499,13 +477,6 @@
     siteGrid.appendChild(btn);
   });
 
-  // Location
-  const usOnlyToggle = document.getElementById('usOnlyToggle');
-  usOnlyToggle.addEventListener('click', function () {
-    usOnlyToggle.classList.toggle('active');
-    render();
-  });
-
   // Timeframe
   const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
   let selectedDays = 1;
@@ -523,7 +494,6 @@
   const copyBtn = document.getElementById('copyBtn');
   const openBtn = document.getElementById('openBtn');
   const toast = document.getElementById('toast');
-  const resultHint = document.getElementById('resultHint');
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function computeAfterDate(days) {
@@ -566,12 +536,6 @@
     });
     if (titles.length > 1) tokens.push({ k: false, v: ')' });
 
-    if (usOnlyToggle.classList.contains('active')) {
-      tokens.push({ k: false, v: ' ' });
-      tokens.push({ k: true, v: 'intext:' });
-      tokens.push({ k: false, v: '"United States"' });
-    }
-
     const afterDate = computeAfterDate(selectedDays);
     if (afterDate) {
       tokens.push({ k: false, v: ' ' });
@@ -598,7 +562,6 @@
     }
     openBtn.disabled = !tokens;
     copyBtn.disabled = !tokens;
-    resultHint.style.display = usOnlyToggle.classList.contains('active') ? '' : 'none';
   }
 
   titlesInput.addEventListener('input', render);
@@ -633,12 +596,7 @@
     const tokens = buildTokens();
     if (!tokens) return;
     const q = tokensToPlain(tokens);
-    const params = new URLSearchParams({ q: q });
-    if (usOnlyToggle.classList.contains('active')) {
-      params.set('gl', 'us');
-      params.set('cr', 'countryUS');
-    }
-    window.open('https://www.google.com/search?' + params.toString(), '_blank', 'noopener');
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
   });
 
   render();
