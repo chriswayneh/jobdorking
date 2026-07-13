@@ -347,6 +347,14 @@
       <div class="pill-group" id="siteGrid"></div>
       <span class="field-hint">Optional. None selected searches all of Google, unrestricted to any site.</span>
     </div>
+
+    <div class="field">
+      <label>Remote</label>
+      <div class="pill-group">
+        <button type="button" class="pill" id="remoteToggle">Remote</button>
+      </div>
+      <span class="field-hint">Optional. Just adds "remote" as a keyword, not a location filter.</span>
+    </div>
   </section>
 
   <section class="result-panel">
@@ -477,6 +485,13 @@
     siteGrid.appendChild(btn);
   });
 
+  // Remote
+  const remoteToggle = document.getElementById('remoteToggle');
+  remoteToggle.addEventListener('click', function () {
+    remoteToggle.classList.toggle('active');
+    render();
+  });
+
   // Timeframe
   const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
   let selectedDays = 1;
@@ -535,6 +550,10 @@
       tokens.push({ k: false, v: '"' + t + '"' });
     });
     if (titles.length > 1) tokens.push({ k: false, v: ')' });
+
+    if (remoteToggle.classList.contains('active')) {
+      tokens.push({ k: false, v: ' remote' });
+    }
 
     const afterDate = computeAfterDate(selectedDays);
     if (afterDate) {
