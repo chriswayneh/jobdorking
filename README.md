@@ -5,8 +5,7 @@ job titles, a posting window, and the job boards you trust — JobDorking
 builds the exact `site:` / `intitle:` / `after:` Google search query and
 opens it (or copies it) for you. No sign-up, no scraping, no backend.
 
-**Live:** https://jobdorking.vercel.app (custom domain `jobdorking.com`
-is purchased but not yet wired up — see [Deployment](#deployment) below)
+**Live:** https://jobdorking.com
 
 ## Background
 
@@ -56,9 +55,8 @@ The page is set up for organic discovery and social sharing:
   content — not just the tool form
 - `robots.txt` and `sitemap.xml` at the repo root
 
-All canonical/OG/sitemap URLs currently point at `https://jobdorking.com/`,
-the intended production domain — see [Deployment](#deployment) for its
-current status.
+All canonical/OG/sitemap URLs point at `https://jobdorking.com/`, the
+live production domain.
 
 ## Deployment
 
@@ -68,13 +66,10 @@ as a static site; Vercel's zero-config static handling covers it).
 
 Previously hosted on GitHub Pages; that's now disabled in favor of Vercel.
 
-**Custom domain status:** `jobdorking.com` has been purchased but DNS
-hosting isn't set up yet, so the site is only reachable at
-https://jobdorking.vercel.app for now. Once DNS is ready, wiring up the
-custom domain is done from the Vercel project's Settings → Domains: add
-`jobdorking.com`, then add the DNS records Vercel provides at the domain's
-DNS provider. Vercel auto-detects the DNS and issues an HTTPS certificate
-once it propagates.
+**Custom domain:** `jobdorking.com` (registered at Squarespace) is live and
+serving over HTTPS, pointed at Vercel via an `A` record (`76.76.21.21`) at
+the DNS provider, with `www.jobdorking.com` configured the same way. Both
+are managed from the Vercel project's Settings → Domains.
 
 ## Local development
 
