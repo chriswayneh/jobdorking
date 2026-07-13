@@ -5,8 +5,8 @@ job titles, a posting window, and the job boards you trust — JobDorking
 builds the exact `site:` / `intitle:` / `after:` Google search query and
 opens it (or copies it) for you. No sign-up, no scraping, no backend.
 
-**Live:** https://chriswayneh.github.io/jobdorking/ (custom domain
-`jobdorking.com` is purchased but not yet wired up — see [Deployment](#deployment) below)
+**Live:** https://jobdorking.vercel.app (custom domain `jobdorking.com`
+is purchased but not yet wired up — see [Deployment](#deployment) below)
 
 ## Background
 
@@ -62,27 +62,19 @@ current status.
 
 ## Deployment
 
-Hosted on **GitHub Pages**, deployed from the `main` branch root — any push
-to `main` goes live within about a minute, no CI/build step required.
+Hosted on **Vercel**, linked to the `main` branch of this repo — any push
+to `main` auto-deploys, no CI config or build step required (it's served
+as a static site; Vercel's zero-config static handling covers it).
+
+Previously hosted on GitHub Pages; that's now disabled in favor of Vercel.
 
 **Custom domain status:** `jobdorking.com` has been purchased but DNS
 hosting isn't set up yet, so the site is only reachable at
-`chriswayneh.github.io/jobdorking` for now. Once DNS is ready, wiring up the
-custom domain takes two steps:
-
-1. Add a `CNAME` file to the repo root containing `jobdorking.com`, and set
-   GitHub Pages' custom domain to match (`gh api -X POST repos/chriswayneh/jobdorking/pages -f "cname=jobdorking.com"`
-   or via repo Settings → Pages).
-2. At the domain's DNS provider, add:
-   ```
-   A       @      185.199.108.153
-   A       @      185.199.109.153
-   A       @      185.199.110.153
-   A       @      185.199.111.153
-   CNAME   www    chriswayneh.github.io.
-   ```
-   GitHub auto-detects the DNS and issues an HTTPS certificate once it
-   propagates — no further action needed after that.
+https://jobdorking.vercel.app for now. Once DNS is ready, wiring up the
+custom domain is done from the Vercel project's Settings → Domains: add
+`jobdorking.com`, then add the DNS records Vercel provides at the domain's
+DNS provider. Vercel auto-detects the DNS and issues an HTTPS certificate
+once it propagates.
 
 ## Local development
 
