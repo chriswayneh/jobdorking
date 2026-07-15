@@ -15,7 +15,7 @@
 <title>JobDorking — Search Every Job Board With One Google Dork</title>
 <meta name="description" content="Free Google dork generator for job search. Set titles, window, and boards, and JobDorking builds the exact search query. No sign-up, no scraping.">
 <meta name="robots" content="index, follow">
-<meta name="theme-color" content="#195AFE">
+<meta name="theme-color" content="#2563EB">
 <link rel="canonical" href="https://jobdorking.com/">
 
 <meta property="og:type" content="website">
@@ -34,50 +34,53 @@
 <meta name="twitter:description" content="Free Google dork generator for job search. No sign-up, no scraping.">
 <meta name="twitter:image" content="https://jobdorking.com/og-image.png">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23195AFE'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3 L27 7 V15 C27 22.5 22 27.5 16 30 C10 27.5 5 22.5 5 15 V7 Z' fill='%232563EB'/><circle cx='14' cy='14' r='4.5' fill='none' stroke='%23FFFFFF' stroke-width='2.1'/><line x1='17.2' y1='17.2' x2='20.5' y2='20.5' stroke='%23FFFFFF' stroke-width='2.3' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #FFFFFF;
     --surface: #FFFFFF;
-    --surface-2: #F2F4F8;
-    --border: #E1E4EA;
-    --ink: #092540;
-    --ink-dim: #5B6B82;
-    --accent: #195AFE;
-    --accent-text: #195AFE;
-    --accent-soft: rgba(25, 90, 254, 0.10);
+    --surface-2: #F8FAFC;
+    --border: #E5E7EB;
+    --ink: #0F172A;
+    --ink-dim: #64748B;
+    --accent: #2563EB;
+    --accent-text: #2563EB;
+    --accent-soft: rgba(37, 99, 235, 0.10);
     --accent-contrast: #FFFFFF;
+    --accent-2: #06B6D4;
     --radius: 16px;
     --radius-sm: 10px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #000921;
-      --surface: #0B1530;
-      --surface-2: #101A3A;
-      --border: #1E2A4A;
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --surface-2: #263449;
+      --border: #334155;
       --ink: #FFFFFF;
-      --ink-dim: #93A0B8;
-      --accent: #195AFE;
-      --accent-text: #6C93FF;
-      --accent-soft: rgba(76, 125, 255, 0.18);
+      --ink-dim: #94A3B8;
+      --accent: #2563EB;
+      --accent-text: #60A5FA;
+      --accent-soft: rgba(96, 165, 250, 0.18);
       --accent-contrast: #FFFFFF;
+      --accent-2: #22D3EE;
     }
   }
   [data-theme="dark"] {
-    --bg: #000921;
-    --surface: #0B1530;
-    --surface-2: #101A3A;
-    --border: #1E2A4A;
+    --bg: #0F172A;
+    --surface: #1E293B;
+    --surface-2: #263449;
+    --border: #334155;
     --ink: #FFFFFF;
-    --ink-dim: #93A0B8;
-    --accent: #195AFE;
-    --accent-text: #6C93FF;
-    --accent-soft: rgba(76, 125, 255, 0.18);
+    --ink-dim: #94A3B8;
+    --accent: #2563EB;
+    --accent-text: #60A5FA;
+    --accent-soft: rgba(96, 165, 250, 0.18);
     --accent-contrast: #FFFFFF;
+    --accent-2: #22D3EE;
   }
 
   * { box-sizing: border-box; }
@@ -85,15 +88,15 @@
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Roboto', system-ui, sans-serif;
+    font-family: 'Poppins', system-ui, sans-serif;
     transition: background-color .2s ease, color .2s ease;
   }
   .wrap { max-width: 680px; margin: 0 auto; padding: 0 20px 80px; }
 
   .topbar { display: flex; align-items: center; justify-content: space-between; padding: 28px 0; }
-  .wordmark { display: flex; align-items: center; gap: 9px; font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; }
-  .wordmark .dim { color: var(--ink-dim); }
-  .wordmark-icon { width: 28px; height: 28px; flex-shrink: 0; }
+  .wordmark { display: flex; align-items: center; gap: 12px; font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; }
+  .wordmark .brand-accent { color: var(--accent); }
+  .wordmark-icon { width: 40px; height: 40px; flex-shrink: 0; }
 
   .theme-toggle {
     width: 38px; height: 38px; border-radius: 50%;
@@ -106,10 +109,10 @@
 
   .hero { padding: 28px 0 40px; }
   .kicker {
-    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 12.5px; letter-spacing: 0.06em;
-    color: var(--accent-text); margin: 0 0 14px; text-transform: uppercase;
+    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: normal;
+    color: var(--accent-text); margin: 0 0 14px;
   }
-  h1 { font-family: 'DM Sans', sans-serif; font-size: 40px; line-height: 1.15; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h1 { font-family: 'Poppins', sans-serif; font-size: 40px; line-height: 1.15; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em; }
   .hero-sub { font-size: 16px; line-height: 1.6; color: var(--ink-dim); max-width: 520px; margin: 0; }
 
   .tool-panel {
@@ -123,7 +126,7 @@
 
   input[type=text] {
     width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--ink);
-    padding: 13px 18px; border-radius: 999px; font-size: 14.5px; font-family: 'Roboto', sans-serif;
+    padding: 13px 18px; border-radius: 999px; font-size: 14.5px; font-family: 'Poppins', sans-serif;
     transition: background-color .2s ease, border-color .15s ease, box-shadow .15s ease;
   }
   input::placeholder { color: var(--ink-dim); opacity: 0.7; }
@@ -131,7 +134,7 @@
 
   .segmented, .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
   .seg-btn, .pill {
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
+    font-family: 'Poppins', sans-serif; font-size: 13.5px; font-weight: 500;
     padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
     background: var(--bg); color: var(--ink-dim); cursor: pointer; transition: all .15s ease;
   }
@@ -153,13 +156,13 @@
   .add-site-row { display: flex; gap: 8px; margin-top: 10px; }
   .add-site-input {
     flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); color: var(--ink);
-    padding: 9px 14px; border-radius: 999px; font-size: 13.5px; font-family: 'Roboto', sans-serif;
+    padding: 9px 14px; border-radius: 999px; font-size: 13.5px; font-family: 'Poppins', sans-serif;
     transition: background-color .2s ease, border-color .15s ease, box-shadow .15s ease;
   }
   .add-site-input::placeholder { color: var(--ink-dim); opacity: 0.7; }
   .add-site-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .add-site-btn {
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 600;
+    font-family: 'Poppins', sans-serif; font-size: 13.5px; font-weight: 600;
     padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border);
     background: var(--bg); color: var(--ink-dim); cursor: pointer; transition: all .15s ease; flex-shrink: 0;
   }
@@ -186,11 +189,11 @@
     padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.75;
     color: var(--ink); white-space: pre-wrap; word-break: break-word; min-height: 48px;
   }
-  .kw { color: var(--accent-text); font-weight: 600; }
+  .kw { color: var(--accent-2); font-weight: 600; }
 
   .btn-open {
     width: 100%; padding: 15px 22px; background: var(--accent); color: var(--accent-contrast);
-    border: none; border-radius: 999px; font-family: 'DM Sans', sans-serif;
+    border: none; border-radius: 999px; font-family: 'Poppins', sans-serif;
     font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s ease, transform .1s ease;
   }
   .btn-open:hover { opacity: 0.88; }
@@ -205,7 +208,7 @@
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(10px);
     background: var(--accent); color: var(--accent-contrast); padding: 10px 18px; border-radius: 999px;
-    font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; font-family: 'Poppins', sans-serif;
     opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   }
@@ -222,7 +225,7 @@
   }
 
   .content-section { padding: 48px 0 0; }
-  .content-section h2 { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
+  .content-section h2 { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
   code {
     font-family: 'JetBrains Mono', monospace; font-size: 0.92em; color: var(--accent-text);
     background: var(--accent-soft); padding: 1px 5px; border-radius: 4px;
@@ -235,10 +238,10 @@
   }
   .step-num {
     flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft);
-    color: var(--accent-text); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13.5px;
+    color: var(--accent-text); font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13.5px;
     display: flex; align-items: center; justify-content: center;
   }
-  .step-body h3 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+  .step-body h3 { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
   .step-body p { font-size: 14px; line-height: 1.6; color: var(--ink-dim); margin: 0; }
 
   .faq-list { display: flex; flex-direction: column; gap: 10px; }
@@ -247,7 +250,7 @@
     padding: 4px 20px;
   }
   .faq-item summary {
-    font-family: 'DM Sans', sans-serif; font-size: 14.5px; font-weight: 600; padding: 16px 0;
+    font-family: 'Poppins', sans-serif; font-size: 14.5px; font-weight: 600; padding: 16px 0;
     cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .faq-item summary::-webkit-details-marker { display: none; }
@@ -329,11 +332,11 @@
   <header class="topbar">
     <div class="wordmark">
       <svg class="wordmark-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="32" height="32" rx="9" fill="var(--accent)"></rect>
-        <circle cx="13.5" cy="13.5" r="6" fill="none" stroke="#FFFFFF" stroke-width="2.3"></circle>
-        <line x1="18" y1="18" x2="23.5" y2="23.5" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"></line>
+        <path d="M16 3 L27 7 V15 C27 22.5 22 27.5 16 30 C10 27.5 5 22.5 5 15 V7 Z" fill="var(--accent)"></path>
+        <circle cx="14" cy="14" r="4.5" fill="none" stroke="#FFFFFF" stroke-width="2.1"></circle>
+        <line x1="17.2" y1="17.2" x2="20.5" y2="20.5" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round"></line>
       </svg>
-      <span>JobDorking<span class="dim">.com</span></span>
+      <span>Job<span class="brand-accent">Dorking</span></span>
     </div>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
@@ -354,7 +357,7 @@
   </header>
 
   <section class="hero">
-    <p class="kicker">Google search operators, built for you</p>
+    <p class="kicker">Discover more. Apply first.</p>
     <h1>Every job board. One search.</h1>
     <p class="hero-sub">Set your target titles, a posting window, and the boards you trust. JobDorking assembles the exact Google query and hands you the results.</p>
   </section>
