@@ -709,7 +709,7 @@
     const tokens = buildTokens();
     if (!tokens) return;
     const q = tokensToPlain(tokens);
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener,noreferrer');
   });
 
   render();
