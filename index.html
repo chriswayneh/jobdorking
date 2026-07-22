@@ -204,6 +204,10 @@
     margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border);
     font-size: 12.5px; color: var(--ink-dim); line-height: 1.6; transition: border-color .2s ease;
   }
+  .site-footer p { margin: 0 0 8px; }
+  .site-footer p:last-child { margin-bottom: 0; }
+  .site-footer a { color: var(--accent-text); text-decoration: none; }
+  .site-footer a:hover { text-decoration: underline; }
 
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(10px);
@@ -471,6 +475,7 @@
 
   <footer class="site-footer">
     <p>Results depend on Google's index, not the boards directly, so postings can lag by a few days. JobDorking builds the query, it doesn't host or scrape listings itself.</p>
+    <p class="copyright">&copy; 2026 JobDorking. Code licensed under <a href="https://github.com/chriswayneh/jobdorking/blob/main/LICENSE">MIT</a>.</p>
   </footer>
 </div>
 
