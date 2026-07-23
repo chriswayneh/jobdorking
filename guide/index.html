@@ -57,22 +57,29 @@
       </svg>
       <span>Job<span class="brand-accent">Dorking</span></span>
     </a>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
-      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
-    </button>
+    <div class="topbar-actions">
+      <button class="theme-toggle" id="maroonToggle" type="button" aria-label="Toggle Texas A&amp;M maroon theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="#500000"></circle>
+        </svg>
+      </button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
+        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
   </header>
 
   <p class="breadcrumb"><a href="/">JobDorking</a> / Guide</p>
@@ -167,6 +174,7 @@
 <script>
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
+  const maroonToggle = document.getElementById('maroonToggle');
   const iconSun = document.getElementById('iconSun');
   const iconMoon = document.getElementById('iconMoon');
   let currentTheme = null;
@@ -180,10 +188,15 @@
     const isDark = currentTheme ? currentTheme === 'dark' : getSystemPrefersDark();
     iconSun.style.display = isDark ? 'block' : 'none';
     iconMoon.style.display = isDark ? 'none' : 'block';
+    maroonToggle.classList.toggle('active', currentTheme === 'maroon');
   }
   themeToggle.addEventListener('click', function () {
     const isDarkNow = currentTheme ? currentTheme === 'dark' : getSystemPrefersDark();
     currentTheme = isDarkNow ? 'light' : 'dark';
+    applyTheme();
+  });
+  maroonToggle.addEventListener('click', function () {
+    currentTheme = currentTheme === 'maroon' ? null : 'maroon';
     applyTheme();
   });
   if (window.matchMedia) {
