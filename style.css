@@ -44,15 +44,15 @@
 [data-theme="maroon"] {
   --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --surface-2: #F6F6F6;
-  --border: #D1D1D1;
-  --ink: #202020;
-  --ink-dim: #626262;
+  --surface-2: #F4F4F4;
+  --border: #C0C0C0;
+  --ink: #1A1A1A;
+  --ink-dim: #6B6B6B;
   --accent: #500000;
   --accent-text: #500000;
   --accent-soft: rgba(80, 0, 0, 0.10);
   --accent-contrast: #FFFFFF;
-  --accent-2: #732F2F;
+  --accent-2: #500000;
 }
 
 * { box-sizing: border-box; }
