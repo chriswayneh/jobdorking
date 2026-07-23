@@ -202,6 +202,16 @@
   .site-footer a { color: var(--accent-text); text-decoration: none; }
   .site-footer a:hover { text-decoration: underline; }
 
+  .contact-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .contact-icon {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-dim);
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .contact-icon:hover { border-color: var(--accent); color: var(--accent-text); }
+  .contact-icon svg { width: 16px; height: 16px; }
+
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(10px);
     background: var(--accent); color: var(--accent-contrast); padding: 10px 18px; border-radius: 999px;
@@ -467,6 +477,28 @@
   </section>
 
   <footer class="site-footer">
+    <div class="contact-row">
+      <a class="contact-icon" href="mailto:Chris.Hickman@Gmail.com" aria-label="Email Chris Hickman">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <path d="m22 6-10 7L2 6"></path>
+        </svg>
+      </a>
+      <a class="contact-icon" href="https://www.linkedin.com/in/chriswhickman/" target="_blank" rel="noopener noreferrer" aria-label="Chris Hickman on LinkedIn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="4"></rect>
+          <circle cx="7.5" cy="7.5" r="0.6" fill="currentColor"></circle>
+          <line x1="7.5" y1="11" x2="7.5" y2="17"></line>
+          <path d="M11 17v-4c0-1.5 1-2.5 2.5-2.5S16 11.5 16 13v4"></path>
+        </svg>
+      </a>
+      <a class="contact-icon" href="https://github.com/chriswayneh" target="_blank" rel="noopener noreferrer" aria-label="Chris Hickman on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.58 9.58 0 0 1 12 6.8c.85.004 1.71.115 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85 0 1.34-.01 2.42-.01 2.75 0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10z"></path>
+        </svg>
+      </a>
+      <span>Built this to speed up my own job search &mdash; reach out if it's useful to you, or you're hiring.</span>
+    </div>
     <p>Results depend on Google's index, not the boards directly, so postings can lag by a few days. JobDorking builds the query, it doesn't host or scrape listings itself.</p>
     <p class="copyright">&copy; 2026 JobDorking. Code licensed under <a href="https://github.com/chriswayneh/jobdorking/blob/main/LICENSE">MIT</a>.</p>
   </footer>
