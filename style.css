@@ -13,6 +13,7 @@
   --radius: 16px;
   --radius-sm: 10px;
 }
+[hidden] { display: none !important; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0F172A;
