@@ -130,10 +130,21 @@
   <section class="hero">
     <p class="kicker">Discover more. Apply first.</p>
     <h1>Every job board. One search.</h1>
-    <p class="hero-sub">Set your target titles, a posting window, and the boards you trust. JobDorking assembles the exact Google query and hands you the results.</p>
+    <p class="hero-sub">Start with a proven search recipe, then tune the roles, filters, and sources that fit your job hunt.</p>
   </section>
 
   <section class="tool-panel">
+    <div class="field recipe-field">
+      <div class="field-heading">
+        <div>
+          <label>Search recipes</label>
+          <span class="field-hint">A practical starting point — you can change every detail below.</span>
+        </div>
+        <button type="button" class="text-btn" id="clearRecipeBtn" hidden>Clear</button>
+      </div>
+      <div class="recipe-grid" id="recipeGrid"></div>
+    </div>
+
     <div class="field">
       <label for="titles">Job titles</label>
       <input type="text" id="titles" placeholder="Product Manager, Software Engineer, UX Designer">
@@ -163,6 +174,49 @@
     </div>
 
     <div class="field">
+      <div class="field-heading">
+        <div>
+          <label>Power filters</label>
+          <span class="field-hint">Optional terms added to your Google search.</span>
+        </div>
+      </div>
+      <div class="filter-grid">
+        <div>
+          <label class="sub-label" for="includeKeywords">Must include</label>
+          <input type="text" id="includeKeywords" placeholder="SaaS, fintech, healthcare">
+        </div>
+        <div>
+          <label class="sub-label" for="excludeKeywords">Exclude</label>
+          <input type="text" id="excludeKeywords" placeholder="intern, staffing agency">
+        </div>
+        <div>
+          <label class="sub-label" for="locationInput">Location</label>
+          <input type="text" id="locationInput" placeholder="Chicago, IL">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div>
+          <span class="sub-label">Seniority</span>
+          <div class="pill-group compact-pills" id="seniorityGrid">
+            <button type="button" class="pill active" data-value="">Any</button>
+            <button type="button" class="pill" data-value="entry level">Entry</button>
+            <button type="button" class="pill" data-value="mid level">Mid</button>
+            <button type="button" class="pill" data-value="senior">Senior</button>
+            <button type="button" class="pill" data-value="lead">Lead</button>
+          </div>
+        </div>
+        <div>
+          <span class="sub-label">Employment type</span>
+          <div class="pill-group compact-pills" id="employmentGrid">
+            <button type="button" class="pill" data-value="full time">Full-time</button>
+            <button type="button" class="pill" data-value="contract">Contract</button>
+            <button type="button" class="pill" data-value="part time">Part-time</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
       <label>Remote</label>
       <div class="pill-group">
         <button type="button" class="pill" id="remoteToggle">Remote</button>
@@ -184,7 +238,22 @@
       </div>
       <div class="code-card-body" id="queryText"></div>
     </div>
-    <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
+    <div class="result-actions">
+      <button class="btn-save" id="saveSearchBtn" type="button">Save search</button>
+      <button class="btn-open" id="openBtn" type="button">Open in Google →</button>
+    </div>
+  </section>
+
+  <section class="saved-section" id="savedSearchesSection" hidden aria-live="polite">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">Your workspace</p>
+        <h2>Saved searches</h2>
+      </div>
+      <button type="button" class="text-btn danger-text" id="clearSavedBtn">Clear all</button>
+    </div>
+    <p class="section-note saved-note">Saved only in this browser. No account needed.</p>
+    <div class="saved-search-list" id="savedSearchList"></div>
   </section>
 
   <section class="content-section">
@@ -301,7 +370,6 @@
   }
   applyTheme();
 
-  // Sources
   const SITES = [
     { label: 'LinkedIn', value: 'site:linkedin.com/jobs' },
     { label: 'Indeed', value: 'site:indeed.com' },
@@ -312,61 +380,94 @@
     { label: 'Workday', value: 'site:myworkdayjobs.com' },
     { label: 'ZipRecruiter', value: 'site:ziprecruiter.com' }
   ];
+  const RECIPES = [
+    { id: 'remote-tech', icon: '⌘', title: 'Remote tech', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'] },
+    { id: 'product-design', icon: '✦', title: 'Product & design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'] },
+    { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
+  ];
+  const SAVED_SEARCHES_KEY = 'jobdorking.saved-searches.v1';
   const siteGrid = document.getElementById('siteGrid');
+  const recipeGrid = document.getElementById('recipeGrid');
+  const clearRecipeBtn = document.getElementById('clearRecipeBtn');
+  const customSiteInput = document.getElementById('customSiteInput');
+  const addSiteBtn = document.getElementById('addSiteBtn');
+  const remoteToggle = document.getElementById('remoteToggle');
+  const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
+  const seniorityBtns = Array.from(document.querySelectorAll('#seniorityGrid .pill'));
+  const employmentBtns = Array.from(document.querySelectorAll('#employmentGrid .pill'));
+  const titlesInput = document.getElementById('titles');
+  const includeKeywordsInput = document.getElementById('includeKeywords');
+  const excludeKeywordsInput = document.getElementById('excludeKeywords');
+  const locationInput = document.getElementById('locationInput');
+  const queryText = document.getElementById('queryText');
+  const copyBtn = document.getElementById('copyBtn');
+  const openBtn = document.getElementById('openBtn');
+  const saveSearchBtn = document.getElementById('saveSearchBtn');
+  const savedSearchesSection = document.getElementById('savedSearchesSection');
+  const savedSearchList = document.getElementById('savedSearchList');
+  const clearSavedBtn = document.getElementById('clearSavedBtn');
+  const toast = document.getElementById('toast');
+  let selectedDays = 1;
+  let activeRecipeId = null;
+
   SITES.forEach(function (site) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'pill';
     btn.dataset.value = site.value;
     btn.textContent = site.label;
-    btn.addEventListener('click', function () { btn.classList.toggle('active'); render(); });
+    btn.addEventListener('click', function () { btn.classList.toggle('active'); onSearchChange(); });
     siteGrid.appendChild(btn);
   });
 
-  // Custom sites
+  RECIPES.forEach(function (recipe) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'recipe-btn';
+    btn.dataset.recipeId = recipe.id;
+    btn.innerHTML = '<span class="recipe-icon" aria-hidden="true">' + recipe.icon + '</span><span class="recipe-title">' + recipe.title + '</span><span class="recipe-copy">' + recipe.copy + '</span>';
+    btn.addEventListener('click', function () { applyRecipe(recipe); });
+    recipeGrid.appendChild(btn);
+  });
+
   function normalizeDomain(raw) {
-    let s = raw.trim().replace(/^https?:\/\//i, '').split('/')[0].split('?')[0];
-    if (!s || /\s/.test(s) || s.indexOf('.') === -1) return null;
-    return s;
+    const domain = raw.trim().replace(/^https?:\/\//i, '').split('/')[0].split('?')[0];
+    return (!domain || /\s/.test(domain) || domain.indexOf('.') === -1) ? null : domain;
   }
-  function addCustomSite(rawValue) {
+  function addCustomSite(rawValue, silent) {
     const domain = normalizeDomain(rawValue);
-    if (!domain) return;
+    if (!domain) return null;
     const value = 'site:' + domain;
     const existing = Array.from(siteGrid.querySelectorAll('[data-value]')).find(function (el) {
       return el.dataset.value.toLowerCase() === value.toLowerCase();
     });
     if (existing) {
       existing.classList.add('active');
-      render();
-      return;
+      if (!silent) onSearchChange();
+      return existing;
     }
     const pill = document.createElement('span');
     pill.className = 'pill pill-custom active';
     pill.dataset.value = value;
-
     const label = document.createElement('button');
     label.type = 'button';
     label.className = 'pill-label';
     label.textContent = domain;
-    label.addEventListener('click', function () { pill.classList.toggle('active'); render(); });
-
+    label.addEventListener('click', function () { pill.classList.toggle('active'); onSearchChange(); });
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'pill-x';
     remove.setAttribute('aria-label', 'Remove ' + domain);
     remove.textContent = '×';
-    remove.addEventListener('click', function () { pill.remove(); render(); });
-
+    remove.addEventListener('click', function () { pill.remove(); onSearchChange(); });
     pill.appendChild(label);
     pill.appendChild(remove);
     siteGrid.appendChild(pill);
-    render();
+    if (!silent) onSearchChange();
+    return pill;
   }
-  const customSiteInput = document.getElementById('customSiteInput');
-  const addSiteBtn = document.getElementById('addSiteBtn');
   function submitCustomSite() {
-    addCustomSite(customSiteInput.value);
+    if (!addCustomSite(customSiteInput.value)) showToast('Enter a valid site, such as wellfound.com');
     customSiteInput.value = '';
   }
   addSiteBtn.addEventListener('click', submitCustomSite);
@@ -374,30 +475,69 @@
     if (e.key === 'Enter') { e.preventDefault(); submitCustomSite(); }
   });
 
-  // Remote
-  const remoteToggle = document.getElementById('remoteToggle');
-  remoteToggle.addEventListener('click', function () {
-    remoteToggle.classList.toggle('active');
+  function setRecipeState(recipeId) {
+    activeRecipeId = recipeId;
+    Array.from(recipeGrid.children).forEach(function (btn) { btn.classList.toggle('active', btn.dataset.recipeId === recipeId); });
+    clearRecipeBtn.hidden = !recipeId;
+  }
+  function onSearchChange() {
+    setRecipeState(null);
     render();
-  });
+  }
+  clearRecipeBtn.addEventListener('click', function () { setRecipeState(null); });
 
-  // Timeframe
-  const segBtns = Array.from(document.querySelectorAll('.seg-btn'));
-  let selectedDays = 1;
+  remoteToggle.addEventListener('click', function () { remoteToggle.classList.toggle('active'); onSearchChange(); });
   segBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       segBtns.forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       selectedDays = parseInt(btn.dataset.value, 10);
-      render();
+      onSearchChange();
     });
   });
+  seniorityBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      seniorityBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      onSearchChange();
+    });
+  });
+  employmentBtns.forEach(function (btn) { btn.addEventListener('click', function () { btn.classList.toggle('active'); onSearchChange(); }); });
+  [titlesInput, includeKeywordsInput, excludeKeywordsInput, locationInput].forEach(function (input) { input.addEventListener('input', onSearchChange); });
 
-  const titlesInput = document.getElementById('titles');
-  const queryText = document.getElementById('queryText');
-  const copyBtn = document.getElementById('copyBtn');
-  const openBtn = document.getElementById('openBtn');
-  const toast = document.getElementById('toast');
+  function splitTerms(value) { return value.split(',').map(function (term) { return term.trim(); }).filter(Boolean); }
+  function activeSites() { return Array.from(siteGrid.querySelectorAll('.pill.active')).map(function (b) { return b.dataset.value; }); }
+  function selectedValue(buttons) { const active = buttons.find(function (btn) { return btn.classList.contains('active'); }); return active ? active.dataset.value : ''; }
+  function selectedValues(buttons) { return buttons.filter(function (btn) { return btn.classList.contains('active'); }).map(function (btn) { return btn.dataset.value; }); }
+
+  function currentSearch() {
+    return {
+      titles: titlesInput.value.trim(), days: selectedDays, sites: activeSites(), remote: remoteToggle.classList.contains('active'),
+      include: includeKeywordsInput.value.trim(), exclude: excludeKeywordsInput.value.trim(), location: locationInput.value.trim(),
+      seniority: selectedValue(seniorityBtns), employment: selectedValues(employmentBtns)
+    };
+  }
+  function applySearch(search, recipeId) {
+    titlesInput.value = search.titles || '';
+    includeKeywordsInput.value = search.include || '';
+    excludeKeywordsInput.value = search.exclude || '';
+    locationInput.value = search.location || '';
+    selectedDays = Number(search.days) || 0;
+    segBtns.forEach(function (btn) { btn.classList.toggle('active', parseInt(btn.dataset.value, 10) === selectedDays); });
+    remoteToggle.classList.toggle('active', Boolean(search.remote));
+    siteGrid.querySelectorAll('.pill-custom').forEach(function (pill) { pill.remove(); });
+    siteGrid.querySelectorAll('.pill').forEach(function (pill) { pill.classList.remove('active'); });
+    (search.sites || []).forEach(function (site) {
+      const existing = Array.from(siteGrid.querySelectorAll('[data-value]')).find(function (pill) { return pill.dataset.value === site; });
+      if (existing) existing.classList.add('active');
+      else addCustomSite(site.replace(/^site:/, ''), true);
+    });
+    seniorityBtns.forEach(function (btn) { btn.classList.toggle('active', btn.dataset.value === (search.seniority || '')); });
+    employmentBtns.forEach(function (btn) { btn.classList.toggle('active', (search.employment || []).indexOf(btn.dataset.value) !== -1); });
+    setRecipeState(recipeId || null);
+    render();
+  }
+  function applyRecipe(recipe) { applySearch(recipe, recipe.id); showToast(recipe.title + ' recipe applied'); }
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function computeAfterDate(days) {
@@ -406,45 +546,47 @@
     d.setDate(d.getDate() - days);
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   }
-  function escapeHtml(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function pushKeywordGroup(tokens, values, prefix) {
+    if (!values.length) return;
+    tokens.push({ k: false, v: ' ' });
+    if (values.length > 1) tokens.push({ k: false, v: '(' });
+    values.forEach(function (value, index) {
+      if (index > 0) tokens.push({ k: true, v: ' OR ' });
+      tokens.push({ k: false, v: prefix + '"' + value + '"' });
+    });
+    if (values.length > 1) tokens.push({ k: false, v: ')' });
   }
-  function activeSites() {
-    return Array.from(siteGrid.querySelectorAll('.pill.active')).map(function (b) { return b.dataset.value; });
-  }
-
   function buildTokens() {
-    const titles = titlesInput.value.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+    const search = currentSearch();
+    const titles = splitTerms(search.titles);
     if (!titles.length) return null;
-
-    const sites = activeSites();
     const tokens = [];
-
-    if (sites.length > 0) {
-      if (sites.length > 1) tokens.push({ k: false, v: '(' });
-      sites.forEach(function (s, i) {
-        if (i > 0) tokens.push({ k: true, v: ' OR ' });
-        const idx = s.indexOf(':');
-        tokens.push({ k: true, v: s.slice(0, idx + 1) });
-        tokens.push({ k: false, v: s.slice(idx + 1) });
+    if (search.sites.length) {
+      if (search.sites.length > 1) tokens.push({ k: false, v: '(' });
+      search.sites.forEach(function (site, index) {
+        if (index > 0) tokens.push({ k: true, v: ' OR ' });
+        const splitIndex = site.indexOf(':');
+        tokens.push({ k: true, v: site.slice(0, splitIndex + 1) });
+        tokens.push({ k: false, v: site.slice(splitIndex + 1) });
       });
-      if (sites.length > 1) tokens.push({ k: false, v: ')' });
+      if (search.sites.length > 1) tokens.push({ k: false, v: ')' });
       tokens.push({ k: false, v: ' ' });
     }
-
     if (titles.length > 1) tokens.push({ k: false, v: '(' });
-    titles.forEach(function (t, i) {
-      if (i > 0) tokens.push({ k: true, v: ' OR ' });
+    titles.forEach(function (title, index) {
+      if (index > 0) tokens.push({ k: true, v: ' OR ' });
       tokens.push({ k: true, v: 'intitle:' });
-      tokens.push({ k: false, v: '"' + t + '"' });
+      tokens.push({ k: false, v: '"' + title + '"' });
     });
     if (titles.length > 1) tokens.push({ k: false, v: ')' });
-
-    if (remoteToggle.classList.contains('active')) {
-      tokens.push({ k: false, v: ' remote' });
-    }
-
-    const afterDate = computeAfterDate(selectedDays);
+    pushKeywordGroup(tokens, splitTerms(search.include), '');
+    if (search.location) tokens.push({ k: false, v: ' "' + search.location + '"' });
+    if (search.seniority) tokens.push({ k: false, v: ' "' + search.seniority + '"' });
+    pushKeywordGroup(tokens, search.employment, '');
+    if (search.remote) tokens.push({ k: false, v: ' remote' });
+    splitTerms(search.exclude).forEach(function (term) { tokens.push({ k: false, v: ' -"' + term + '"' }); });
+    const afterDate = computeAfterDate(search.days);
     if (afterDate) {
       tokens.push({ k: false, v: ' ' });
       tokens.push({ k: true, v: 'after:' });
@@ -470,16 +612,110 @@
     }
     openBtn.disabled = !tokens;
     copyBtn.disabled = !tokens;
+    saveSearchBtn.disabled = !tokens;
   }
-
-  titlesInput.addEventListener('input', render);
 
   let toastTimer;
-  function showToast() {
+  function showToast(message) {
+    toast.textContent = message || 'Copied to clipboard';
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
   }
+
+  function getSavedSearches() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVED_SEARCHES_KEY) || '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch (error) {
+      return [];
+    }
+  }
+  function storeSavedSearches(searches) {
+    try {
+      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(searches));
+      return true;
+    } catch (error) {
+      showToast('Your browser could not save this search');
+      return false;
+    }
+  }
+  function savedSearchName(search) {
+    const titles = splitTerms(search.titles);
+    const title = titles.length > 1 ? titles[0] + ' +' + (titles.length - 1) : (titles[0] || 'Job search');
+    const qualifier = search.remote ? 'Remote' : (search.location || 'Search');
+    return title + ' · ' + qualifier;
+  }
+  function renderSavedSearches() {
+    const searches = getSavedSearches();
+    savedSearchesSection.hidden = !searches.length;
+    savedSearchList.replaceChildren();
+    searches.forEach(function (saved) {
+      const card = document.createElement('article');
+      card.className = 'saved-search-card';
+      const main = document.createElement('div');
+      main.className = 'saved-search-main';
+      const heading = document.createElement('h3');
+      heading.className = 'saved-search-title';
+      heading.textContent = saved.name;
+      const meta = document.createElement('p');
+      meta.className = 'saved-search-meta';
+      meta.textContent = saved.query;
+      main.appendChild(heading);
+      main.appendChild(meta);
+      const actions = document.createElement('div');
+      actions.className = 'saved-search-actions';
+      const run = document.createElement('button');
+      run.type = 'button';
+      run.className = 'saved-run';
+      run.textContent = 'Load search';
+      run.addEventListener('click', function () {
+        applySearch(saved.search);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('Saved search loaded');
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'saved-delete';
+      remove.textContent = 'Delete';
+      remove.addEventListener('click', function () {
+        const next = getSavedSearches().filter(function (item) { return item.id !== saved.id; });
+        if (storeSavedSearches(next)) {
+          renderSavedSearches();
+          showToast('Saved search deleted');
+        }
+      });
+      actions.appendChild(run);
+      actions.appendChild(remove);
+      card.appendChild(main);
+      card.appendChild(actions);
+      savedSearchList.appendChild(card);
+    });
+  }
+  function saveCurrentSearch() {
+    const tokens = buildTokens();
+    if (!tokens) return;
+    const search = currentSearch();
+    const query = tokensToPlain(tokens);
+    const saved = getSavedSearches();
+    if (saved.some(function (item) { return item.query === query; })) {
+      showToast('That search is already saved');
+      return;
+    }
+    saved.unshift({ id: String(Date.now()), name: savedSearchName(search), query: query, search: search });
+    if (storeSavedSearches(saved)) {
+      renderSavedSearches();
+      showToast('Search saved to this device');
+    }
+  }
+  saveSearchBtn.addEventListener('click', saveCurrentSearch);
+  clearSavedBtn.addEventListener('click', function () {
+    if (!window.confirm('Delete every saved search from this device?')) return;
+    if (storeSavedSearches([])) {
+      renderSavedSearches();
+      showToast('Saved searches cleared');
+    }
+  });
 
   copyBtn.addEventListener('click', async function () {
     const tokens = buildTokens();
@@ -497,7 +733,7 @@
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    showToast();
+    showToast('Copied to clipboard');
   });
 
   openBtn.addEventListener('click', function () {
@@ -507,6 +743,7 @@
     window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener,noreferrer');
   });
 
+  renderSavedSearches();
   render();
 </script>
 </body>
