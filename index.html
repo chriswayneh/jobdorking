@@ -144,7 +144,7 @@
           <label>Search recipes</label>
           <span class="field-hint">A practical starting point — you can change every detail below.</span>
         </div>
-        <button type="button" class="text-btn" id="clearRecipeBtn" hidden>Clear</button>
+        <button type="button" class="text-btn" id="clearRecipeBtn" hidden>Reset all</button>
       </div>
       <div class="recipe-grid" id="recipeGrid"></div>
     </div>
@@ -558,7 +558,13 @@
     setRecipeState(null);
     render();
   }
-  clearRecipeBtn.addEventListener('click', function () { setRecipeState(null); });
+  function resetSearch() {
+    applySearch({
+      titles: '', days: 1, sites: [], remote: false, include: '', exclude: '', location: '', seniority: '', employment: []
+    }, null);
+    customSiteInput.value = '';
+  }
+  clearRecipeBtn.addEventListener('click', function () { resetSearch(); showToast('Search reset'); });
 
   remoteToggle.addEventListener('click', function () { remoteToggle.classList.toggle('active'); onSearchChange(); });
   segBtns.forEach(function (btn) {
