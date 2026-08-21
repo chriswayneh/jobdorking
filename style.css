@@ -90,6 +90,7 @@ h1 { font-family: 'Poppins', sans-serif; font-size: 40px; line-height: 1.15; fon
 .field-hint { display: block; font-size: 12.5px; color: var(--ink-dim); margin-top: 6px; }
 .field-heading, .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .field-heading .field-hint { margin-top: -2px; }
+.recipe-field .field-heading { margin-bottom: 12px; }
 .text-btn {
   border: 0; padding: 2px 0; background: transparent; color: var(--accent-text); font: 600 12.5px 'Poppins', sans-serif;
   cursor: pointer; white-space: nowrap;
