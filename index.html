@@ -109,6 +109,9 @@
       </svg>
       <span>Job<span class="brand-accent">Dorking</span></span>
     </div>
+    <div class="topbar-actions">
+    <button class="account-btn" id="accountButton" type="button" hidden>Sign in</button>
+    <div class="user-button" id="userButton" hidden></div>
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
         <circle cx="12" cy="12" r="5"></circle>
@@ -125,6 +128,7 @@
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
       </svg>
     </button>
+    </div>
   </header>
 
   <section class="hero">
@@ -279,6 +283,30 @@
           <span class="activity-total" id="weeklyActivityTotal">0</span>
         </div>
         <div class="weekly-chart" id="weeklyChart" aria-label="Searches run during the last seven days"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="account-prompt" id="accountPrompt" hidden>
+    <div>
+      <p class="section-kicker">Optional account</p>
+      <h2>Take your search workspace with you.</h2>
+      <p>Sign in to securely back up saved searches, daily activity, and your checklist across devices.</p>
+    </div>
+    <button type="button" class="btn-sync" id="accountPromptButton">Sign in to sync</button>
+  </section>
+
+  <section class="sync-section" id="cloudSyncSection" hidden aria-live="polite">
+    <div class="sync-card">
+      <div>
+        <p class="section-kicker">Your account</p>
+        <h2>Cloud sync is on</h2>
+        <p class="sync-copy" id="cloudSyncStatus">Your saved searches and activity are syncing securely.</p>
+      </div>
+      <div class="sync-actions">
+        <button type="button" class="btn-sync" id="syncNowBtn">Sync now</button>
+        <button type="button" class="text-btn" id="exportWorkspaceBtn">Export data</button>
+        <button type="button" class="text-btn danger-text danger-sync" id="deleteCloudDataBtn">Delete cloud data</button>
       </div>
     </div>
   </section>
@@ -440,9 +468,22 @@
   const weeklyChart = document.getElementById('weeklyChart');
   const weeklyActivityLabel = document.getElementById('weeklyActivityLabel');
   const weeklyActivityTotal = document.getElementById('weeklyActivityTotal');
+  const accountButton = document.getElementById('accountButton');
+  const userButton = document.getElementById('userButton');
+  const accountPrompt = document.getElementById('accountPrompt');
+  const accountPromptButton = document.getElementById('accountPromptButton');
+  const cloudSyncSection = document.getElementById('cloudSyncSection');
+  const cloudSyncStatus = document.getElementById('cloudSyncStatus');
+  const syncNowBtn = document.getElementById('syncNowBtn');
+  const exportWorkspaceBtn = document.getElementById('exportWorkspaceBtn');
+  const deleteCloudDataBtn = document.getElementById('deleteCloudDataBtn');
   const toast = document.getElementById('toast');
   let selectedDays = 1;
   let activeRecipeId = null;
+  let clerk = null;
+  let isCloudSyncing = false;
+  let isApplyingCloudWorkspace = false;
+  let cloudSyncTimer = null;
 
   SITES.forEach(function (site) {
     const btn = document.createElement('button');
@@ -668,6 +709,7 @@
   function storeSavedSearches(searches) {
     try {
       localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(searches));
+      queueCloudSync();
       return true;
     } catch (error) {
       showToast('Your browser could not save this search');
@@ -688,6 +730,7 @@
   function storeActivity(activity) {
     try {
       localStorage.setItem(SEARCH_ACTIVITY_KEY, JSON.stringify(activity.slice(-365)));
+      queueCloudSync();
       return true;
     } catch (error) {
       return false;
@@ -705,6 +748,7 @@
   function storeChecklistState(state) {
     try {
       localStorage.setItem(DAILY_CHECKLIST_KEY, JSON.stringify(state));
+      queueCloudSync();
       return true;
     } catch (error) {
       return false;
@@ -801,6 +845,163 @@
     storeActivity(activity);
     renderSavedSearches();
     renderWorkspace();
+  }
+  function getLocalWorkspace() {
+    return { savedSearches: getSavedSearches(), activity: getActivity(), checklist: getChecklistState() };
+  }
+  function writeLocalWorkspace(workspace) {
+    isApplyingCloudWorkspace = true;
+    try {
+      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(workspace.savedSearches || []));
+      localStorage.setItem(SEARCH_ACTIVITY_KEY, JSON.stringify((workspace.activity || []).slice(-365)));
+      localStorage.setItem(DAILY_CHECKLIST_KEY, JSON.stringify(workspace.checklist || getChecklistState()));
+    } finally {
+      isApplyingCloudWorkspace = false;
+    }
+    renderSavedSearches();
+    renderWorkspace();
+  }
+  function mergeWorkspace(remote, local) {
+    const searches = new Map();
+    (remote.savedSearches || []).concat(local.savedSearches || []).forEach(function (search) {
+      const previous = searches.get(search.id);
+      if (!previous) {
+        searches.set(search.id, search);
+        return;
+      }
+      const latestRun = (previous.lastRunAt || '') > (search.lastRunAt || '') ? previous.lastRunAt : search.lastRunAt;
+      searches.set(search.id, Object.assign({}, previous, search, latestRun ? { lastRunAt: latestRun } : {}));
+    });
+    const activity = new Map();
+    (remote.activity || []).concat(local.activity || []).forEach(function (item) {
+      const key = item.timestamp || (item.date + ':' + item.searchId);
+      activity.set(key, item);
+    });
+    const today = localDateKey(new Date());
+    const remoteChecklist = remote.checklist && remote.checklist.date === today ? remote.checklist : { date: today, completed: {} };
+    const localChecklist = local.checklist && local.checklist.date === today ? local.checklist : { date: today, completed: {} };
+    return {
+      savedSearches: Array.from(searches.values()),
+      activity: Array.from(activity.values()).sort(function (a, b) { return String(a.timestamp).localeCompare(String(b.timestamp)); }).slice(-365),
+      checklist: { date: today, completed: Object.assign({}, remoteChecklist.completed, localChecklist.completed) }
+    };
+  }
+  function setCloudStatus(message) {
+    cloudSyncStatus.textContent = message;
+  }
+  async function getSessionToken() {
+    if (!clerk || !clerk.session) return null;
+    return clerk.session.getToken();
+  }
+  async function cloudRequest(url, options) {
+    const token = await getSessionToken();
+    if (!token) throw new Error('No active session.');
+    const headers = Object.assign({}, options && options.headers, { Authorization: 'Bearer ' + token });
+    return fetch(url, Object.assign({}, options, { headers }));
+  }
+  async function syncCloudWorkspace() {
+    if (!clerk || !clerk.isSignedIn || isCloudSyncing) return;
+    isCloudSyncing = true;
+    syncNowBtn.disabled = true;
+    setCloudStatus('Syncing your saved searches and activity…');
+    try {
+      const response = await cloudRequest('/api/workspace', { method: 'GET' });
+      if (!response.ok) throw new Error('Could not load your workspace.');
+      const remote = await response.json();
+      const merged = remote.workspace ? mergeWorkspace(remote.workspace, getLocalWorkspace()) : getLocalWorkspace();
+      writeLocalWorkspace(merged);
+      const upload = await cloudRequest('/api/workspace', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace: merged })
+      });
+      if (!upload.ok) throw new Error('Could not save your workspace.');
+      setCloudStatus('Synced just now. Your workspace is available on any signed-in device.');
+    } catch (error) {
+      console.error('Cloud sync failed', error);
+      setCloudStatus('Sync paused. Your searches are still safe on this device.');
+    } finally {
+      isCloudSyncing = false;
+      syncNowBtn.disabled = false;
+    }
+  }
+  function exportWorkspace() {
+    const payload = JSON.stringify({ exportedAt: new Date().toISOString(), workspace: getLocalWorkspace() }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'jobdorking-workspace.json';
+    link.click();
+    setTimeout(function () { URL.revokeObjectURL(link.href); }, 0);
+    showToast('Your workspace export is downloading');
+  }
+  async function deleteCloudData() {
+    if (!window.confirm('Delete your synced JobDorking data from the cloud? Your local browser data will stay on this device.')) return;
+    deleteCloudDataBtn.disabled = true;
+    setCloudStatus('Deleting your cloud workspace…');
+    try {
+      const response = await cloudRequest('/api/workspace', { method: 'DELETE' });
+      if (!response.ok) throw new Error('Could not delete cloud data.');
+      setCloudStatus('Cloud data deleted. Your local browser data is still available.');
+      showToast('Cloud workspace deleted');
+    } catch (error) {
+      console.error('Cloud deletion failed', error);
+      setCloudStatus('Could not delete cloud data. Please try again.');
+    } finally {
+      deleteCloudDataBtn.disabled = false;
+    }
+  }
+  function queueCloudSync() {
+    if (!clerk || !clerk.isSignedIn || isApplyingCloudWorkspace || isCloudSyncing) return;
+    clearTimeout(cloudSyncTimer);
+    cloudSyncTimer = setTimeout(syncCloudWorkspace, 700);
+  }
+  function addClerkScript(src, attributes) {
+    return new Promise(function (resolve, reject) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      Object.keys(attributes || {}).forEach(function (key) { script.setAttribute(key, attributes[key]); });
+      script.onload = resolve;
+      script.onerror = function () { reject(new Error('Could not load the sign-in service.')); };
+      document.head.appendChild(script);
+    });
+  }
+  function showSignedInAccount() {
+    accountButton.hidden = true;
+    userButton.hidden = false;
+    accountPrompt.hidden = true;
+    cloudSyncSection.hidden = false;
+    userButton.replaceChildren();
+    clerk.mountUserButton(userButton, { appearance: { variables: { colorPrimary: '#2563EB' } } });
+    syncCloudWorkspace();
+  }
+  async function initializeAccount() {
+    try {
+      const response = await fetch('/api/auth-config');
+      if (!response.ok) return;
+      const config = await response.json();
+      const clerkDomain = atob(config.publishableKey.split('_')[2]).slice(0, -1);
+      await addClerkScript('https://' + clerkDomain + '/npm/@clerk/ui@1/dist/ui.browser.js');
+      await addClerkScript('https://' + clerkDomain + '/npm/@clerk/clerk-js@6/dist/clerk.browser.js', { 'data-clerk-publishable-key': config.publishableKey });
+      await window.Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+      clerk = window.Clerk;
+      accountButton.hidden = false;
+      accountPrompt.hidden = false;
+      function openSignIn() { clerk.openSignIn(); }
+      accountButton.addEventListener('click', openSignIn);
+      accountPromptButton.addEventListener('click', openSignIn);
+      syncNowBtn.addEventListener('click', syncCloudWorkspace);
+      exportWorkspaceBtn.addEventListener('click', exportWorkspace);
+      deleteCloudDataBtn.addEventListener('click', deleteCloudData);
+      clerk.addListener(function () {
+        if (clerk.isSignedIn && cloudSyncSection.hidden) showSignedInAccount();
+      });
+      if (clerk.isSignedIn) showSignedInAccount();
+    } catch (error) {
+      console.error('Account setup failed', error);
+    }
   }
   function savedSearchName(search) {
     const titles = splitTerms(search.titles);
@@ -925,6 +1126,7 @@
   renderSavedSearches();
   renderWorkspace();
   render();
+  initializeAccount();
 </script>
 </body>
 </html>
