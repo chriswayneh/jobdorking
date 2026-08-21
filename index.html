@@ -256,6 +256,33 @@
     <div class="saved-search-list" id="savedSearchList"></div>
   </section>
 
+  <section class="workspace-section" aria-labelledby="workspaceHeading">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">Build a habit</p>
+        <h2 id="workspaceHeading">Today’s job-search workspace</h2>
+      </div>
+      <span class="today-date" id="todayDate"></span>
+    </div>
+    <div class="workspace-grid">
+      <div class="workspace-card">
+        <h3>Daily checklist</h3>
+        <p class="workspace-copy">Small, repeatable steps to keep your search moving.</p>
+        <div class="checklist" id="dailyChecklist"></div>
+      </div>
+      <div class="workspace-card activity-card">
+        <div class="activity-heading">
+          <div>
+            <h3>Weekly activity</h3>
+            <p class="workspace-copy" id="weeklyActivityLabel">No searches run this week yet.</p>
+          </div>
+          <span class="activity-total" id="weeklyActivityTotal">0</span>
+        </div>
+        <div class="weekly-chart" id="weeklyChart" aria-label="Searches run during the last seven days"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="content-section">
     <h2>How it works</h2>
     <ol class="steps">
@@ -386,6 +413,8 @@
     { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
   ];
   const SAVED_SEARCHES_KEY = 'jobdorking.saved-searches.v1';
+  const SEARCH_ACTIVITY_KEY = 'jobdorking.search-activity.v1';
+  const DAILY_CHECKLIST_KEY = 'jobdorking.daily-checklist.v1';
   const siteGrid = document.getElementById('siteGrid');
   const recipeGrid = document.getElementById('recipeGrid');
   const clearRecipeBtn = document.getElementById('clearRecipeBtn');
@@ -406,6 +435,11 @@
   const savedSearchesSection = document.getElementById('savedSearchesSection');
   const savedSearchList = document.getElementById('savedSearchList');
   const clearSavedBtn = document.getElementById('clearSavedBtn');
+  const todayDate = document.getElementById('todayDate');
+  const dailyChecklist = document.getElementById('dailyChecklist');
+  const weeklyChart = document.getElementById('weeklyChart');
+  const weeklyActivityLabel = document.getElementById('weeklyActivityLabel');
+  const weeklyActivityTotal = document.getElementById('weeklyActivityTotal');
   const toast = document.getElementById('toast');
   let selectedDays = 1;
   let activeRecipeId = null;
@@ -640,6 +674,134 @@
       return false;
     }
   }
+  function localDateKey(date) {
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+  }
+  function getActivity() {
+    try {
+      const activity = JSON.parse(localStorage.getItem(SEARCH_ACTIVITY_KEY) || '[]');
+      return Array.isArray(activity) ? activity : [];
+    } catch (error) {
+      return [];
+    }
+  }
+  function storeActivity(activity) {
+    try {
+      localStorage.setItem(SEARCH_ACTIVITY_KEY, JSON.stringify(activity.slice(-365)));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  function getChecklistState() {
+    const today = localDateKey(new Date());
+    try {
+      const state = JSON.parse(localStorage.getItem(DAILY_CHECKLIST_KEY) || '{}');
+      return state.date === today && state.completed ? state : { date: today, completed: {} };
+    } catch (error) {
+      return { date: today, completed: {} };
+    }
+  }
+  function storeChecklistState(state) {
+    try {
+      localStorage.setItem(DAILY_CHECKLIST_KEY, JSON.stringify(state));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  function formatLastRun(iso) {
+    if (!iso) return 'Not run yet';
+    const date = new Date(iso);
+    const today = localDateKey(new Date());
+    const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    if (localDateKey(date) === today) return 'Run today at ' + time;
+    return 'Last run ' + date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' at ' + time;
+  }
+  function renderWorkspace() {
+    const now = new Date();
+    const today = localDateKey(now);
+    todayDate.textContent = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+    const activity = getActivity();
+    const hasRunToday = activity.some(function (item) { return item.date === today; });
+    const checklistState = getChecklistState();
+    const items = [
+      { id: 'run-search', label: 'Run a saved search', hint: hasRunToday ? 'Done — nice momentum.' : 'Marked automatically when you run a saved search.', checked: hasRunToday, automatic: true },
+      { id: 'review-results', label: 'Review fresh results', hint: 'Save promising roles outside JobDorking.', checked: Boolean(checklistState.completed['review-results']) },
+      { id: 'plan-next-step', label: 'Choose your next step', hint: 'Apply, follow up, or refine tomorrow’s search.', checked: Boolean(checklistState.completed['plan-next-step']) }
+    ];
+    dailyChecklist.replaceChildren();
+    items.forEach(function (item) {
+      const row = document.createElement('label');
+      row.className = 'checklist-item' + (item.checked ? ' done' : '');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = item.checked;
+      input.disabled = Boolean(item.automatic);
+      input.setAttribute('aria-label', item.label);
+      input.addEventListener('change', function () {
+        const nextState = getChecklistState();
+        nextState.completed[item.id] = input.checked;
+        if (storeChecklistState(nextState)) renderWorkspace();
+      });
+      const text = document.createElement('span');
+      text.className = 'checklist-text';
+      text.textContent = item.label;
+      const hint = document.createElement('span');
+      hint.className = 'checklist-hint';
+      hint.textContent = item.hint;
+      text.appendChild(hint);
+      row.appendChild(input);
+      row.appendChild(text);
+      dailyChecklist.appendChild(row);
+    });
+    const week = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - offset);
+      const dateKey = localDateKey(date);
+      week.push({ date: date, key: dateKey, count: activity.filter(function (item) { return item.date === dateKey; }).length });
+    }
+    const total = week.reduce(function (sum, day) { return sum + day.count; }, 0);
+    const maximum = Math.max.apply(null, week.map(function (day) { return day.count; }).concat([1]));
+    weeklyActivityTotal.textContent = total;
+    weeklyActivityLabel.textContent = total ? total + (total === 1 ? ' search run in the last 7 days.' : ' searches run in the last 7 days.') : 'No searches run this week yet.';
+    weeklyChart.replaceChildren();
+    week.forEach(function (day) {
+      const bar = document.createElement('div');
+      bar.className = 'day-bar';
+      bar.title = day.date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ': ' + day.count + (day.count === 1 ? ' search' : ' searches');
+      const count = document.createElement('span');
+      count.className = 'bar-count';
+      count.textContent = day.count || '';
+      const track = document.createElement('div');
+      track.className = 'bar-track';
+      const fill = document.createElement('div');
+      fill.className = 'bar-fill';
+      fill.style.height = (day.count ? Math.max(12, (day.count / maximum) * 100) : 3) + '%';
+      track.appendChild(fill);
+      const label = document.createElement('span');
+      label.className = 'bar-label';
+      label.textContent = day.date.toLocaleDateString([], { weekday: 'narrow' });
+      bar.appendChild(count);
+      bar.appendChild(track);
+      bar.appendChild(label);
+      weeklyChart.appendChild(bar);
+    });
+  }
+  function recordSearchRun(savedId) {
+    const now = new Date();
+    const searches = getSavedSearches();
+    const saved = searches.find(function (item) { return item.id === savedId; });
+    if (!saved) return;
+    saved.lastRunAt = now.toISOString();
+    storeSavedSearches(searches);
+    const activity = getActivity();
+    activity.push({ date: localDateKey(now), searchId: savedId, timestamp: now.toISOString() });
+    storeActivity(activity);
+    renderSavedSearches();
+    renderWorkspace();
+  }
   function savedSearchName(search) {
     const titles = splitTerms(search.titles);
     const title = titles.length > 1 ? titles[0] + ' +' + (titles.length - 1) : (titles[0] || 'Job search');
@@ -661,15 +823,31 @@
       const meta = document.createElement('p');
       meta.className = 'saved-search-meta';
       meta.textContent = saved.query;
+      const status = document.createElement('p');
+      status.className = 'saved-search-status';
+      status.textContent = formatLastRun(saved.lastRunAt);
       main.appendChild(heading);
       main.appendChild(meta);
+      main.appendChild(status);
       const actions = document.createElement('div');
       actions.className = 'saved-search-actions';
       const run = document.createElement('button');
       run.type = 'button';
       run.className = 'saved-run';
-      run.textContent = 'Load search';
+      run.textContent = 'Run today';
       run.addEventListener('click', function () {
+        applySearch(saved.search);
+        const tokens = buildTokens();
+        if (!tokens) return;
+        recordSearchRun(saved.id);
+        window.open('https://www.google.com/search?q=' + encodeURIComponent(tokensToPlain(tokens)), '_blank', 'noopener,noreferrer');
+        showToast('Search run — activity updated');
+      });
+      const load = document.createElement('button');
+      load.type = 'button';
+      load.className = 'saved-load';
+      load.textContent = 'Load';
+      load.addEventListener('click', function () {
         applySearch(saved.search);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         showToast('Saved search loaded');
@@ -686,6 +864,7 @@
         }
       });
       actions.appendChild(run);
+      actions.appendChild(load);
       actions.appendChild(remove);
       card.appendChild(main);
       card.appendChild(actions);
@@ -744,6 +923,7 @@
   });
 
   renderSavedSearches();
+  renderWorkspace();
   render();
 </script>
 </body>
