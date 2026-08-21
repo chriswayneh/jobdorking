@@ -974,13 +974,28 @@
     });
   }
   function showSignedInAccount() {
+    const wasSignedOut = cloudSyncSection.hidden;
     accountButton.hidden = true;
     userButton.hidden = false;
     accountPrompt.hidden = true;
     cloudSyncSection.hidden = false;
+    if (!userButton.hasChildNodes()) {
+      clerk.mountUserButton(userButton, { appearance: { variables: { colorPrimary: '#2563EB' } } });
+    }
+    if (wasSignedOut) syncCloudWorkspace();
+  }
+  function showSignedOutAccount() {
+    accountButton.hidden = false;
+    userButton.hidden = true;
+    accountPrompt.hidden = false;
+    cloudSyncSection.hidden = true;
+    if (userButton.hasChildNodes()) clerk.unmountUserButton(userButton);
     userButton.replaceChildren();
-    clerk.mountUserButton(userButton, { appearance: { variables: { colorPrimary: '#2563EB' } } });
-    syncCloudWorkspace();
+  }
+  function updateAccountUI(resources) {
+    const signedIn = resources ? Boolean(resources.user && resources.session) : Boolean(clerk && clerk.isSignedIn);
+    if (signedIn) showSignedInAccount();
+    else showSignedOutAccount();
   }
   async function initializeAccount() {
     try {
@@ -992,18 +1007,14 @@
       await addClerkScript('https://' + clerkDomain + '/npm/@clerk/clerk-js@6/dist/clerk.browser.js', { 'data-clerk-publishable-key': config.publishableKey });
       await window.Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
       clerk = window.Clerk;
-      accountButton.hidden = false;
-      accountPrompt.hidden = false;
       function openSignIn() { clerk.openSignIn(); }
       accountButton.addEventListener('click', openSignIn);
       accountPromptButton.addEventListener('click', openSignIn);
       syncNowBtn.addEventListener('click', syncCloudWorkspace);
       exportWorkspaceBtn.addEventListener('click', exportWorkspace);
       deleteCloudDataBtn.addEventListener('click', deleteCloudData);
-      clerk.addListener(function () {
-        if (clerk.isSignedIn && cloudSyncSection.hidden) showSignedInAccount();
-      });
-      if (clerk.isSignedIn) showSignedInAccount();
+      clerk.addListener(updateAccountUI);
+      updateAccountUI();
     } catch (error) {
       console.error('Account setup failed', error);
     }
