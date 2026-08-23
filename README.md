@@ -1,45 +1,65 @@
 # JobDorking
 
-A free Google dork generator for job hunting. Pick your target job titles,
-a posting window, the job boards you trust, and optional power filters —
-JobDorking builds the exact `site:` / `intitle:` / `after:` search-operator
-query and opens it (or copies it) for you. No sign-up required to use the
-tool; an optional account adds cloud-synced saved searches.
+A free, privacy-conscious job-search workspace that turns roles, filters, and
+trusted job boards into one targeted Google query. JobDorking builds the
+`site:` / `intitle:` / `after:` operators in real time, helps you save and run
+repeatable searches, and tracks your weekly search habit. The complete tool
+works without an account; optional sign-in syncs the workspace across devices.
 
-**Live:** https://jobdorking.com
+**Live app:** [jobdorking.com](https://jobdorking.com)
+
+## Current product
+
+- **Persona starting points** for software engineers, product/design
+  candidates, and startup hunters reduce the blank-page problem.
+- **Search recipes with explainers** prefill proven combinations and compare
+  manual searching with the boards and operators used by each recipe.
+- **Power filters and a live query preview** cover titles, recency, sources,
+  remote work, location, seniority, employment type, included terms, and
+  excluded terms.
+- **Job-board discovery** provides a filterable directory of supported sources
+  with one-click “Add to Sources” actions, plus support for custom domains.
+- **Saved searches and a daily workspace** include “Run today” actions,
+  last-run timestamps, a three-step checklist, and a seven-day streak heatmap.
+- **Mobile-first actions** keep “Open in Google” available in a sticky bottom
+  bar after the primary button scrolls out of view.
+- **Optional cloud sync** backs up saved searches, search activity, and the
+  daily checklist through Clerk and Neon while preserving signed-out use.
+- **Built-in product measurement** records only approved aggregate categories
+  and counts so improvements can be prioritized without collecting searches.
+
+All four product phases and the measurement phase are delivered. See the
+[product roadmap](ROADMAP.md) for the completed scope.
 
 ## Background
 
-This project started as a personal tool: a minimalist, single-page utility
-built to speed up my own job search by turning Google's advanced search
-operators into something usable without memorizing syntax. It worked well
-enough, on its own merits, to be worth developing into a proper product —
-with a real design system, structured data and SEO groundwork for organic
-discovery, and a foundation for eventual monetization. It's since grown
-into a small product: search recipes, power filters, a daily job-search
-workspace, and optional cloud sync.
+This project started as a minimalist personal utility for turning Google's
+advanced search operators into something usable without memorizing syntax. It
+has since grown into a production job-search product with guided onboarding,
+transparent query building, repeatable workflows, optional accounts,
+privacy-conscious measurement, a consistent design system, and dedicated SEO
+content for organic discovery.
 
 ## How it works
 
-1. You enter comma-separated job titles.
-2. You pick a posting window (24h, 3 days, 1 week, 1 month, 3 months, or any time).
-3. You optionally check off job boards to restrict the search to (LinkedIn,
-   Indeed, Dice, Greenhouse, Lever, Ashby, Workday, ZipRecruiter), or add a
-   custom site. Leaving all boards unchecked searches all of Google,
-   unrestricted to any site.
-4. Optional power filters add must-include/exclude terms, a location,
-   seniority level, and employment type to the query.
-5. The page assembles a Google search-operator query client-side and lets
-   you copy it, save it, or open it directly in Google.
+1. Choose a persona or search recipe, or start with a blank search.
+2. Tune comma-separated job titles, posting recency, supported boards or a
+   custom domain, and any optional power filters.
+3. Review the human-readable Google query as it updates in real time.
+4. Copy the query, save it for later, or open it directly in Google. On mobile,
+   the Google action remains available while scrolling.
+5. Return to saved searches and the daily workspace to run searches, review
+   last-run timestamps, complete the checklist, and build a weekly streak.
 
 **Search recipes** are one-click starting points (Remote tech, Product &
-design, Fresh startup roles) that pre-fill titles, sources, and filters —
-everything below them stays editable.
+design, Fresh startup roles) that prefill titles, sources, and filters. Each
+recipe includes an inline breakdown of its board coverage and Google operators;
+clicking the active recipe again resets the entire search to its defaults.
 
-**Your workspace** is a daily habit tracker (checklist + weekly activity
-streak) and your list of saved searches. It lives in `localStorage` by
-default, so it works fully signed-out; signing in additionally syncs it
-to the cloud so it follows you across devices.
+**Your workspace** combines saved searches, last-run timestamps, a daily
+checklist, and a weekly activity streak. It lives in `localStorage` by default,
+so it works fully signed out; signing in additionally syncs the complete
+workspace to the cloud so it follows you across devices.
 
 ## Accounts & cloud sync (optional)
 
@@ -55,8 +75,8 @@ serverless API backed by [Neon](https://neon.tech) (serverless Postgres):
   (`DATABASE_URL`). Payloads are capped at 1MB; queries are parameterized.
 - `api/product-events.js` — batches five product signals into daily aggregate
   counts in Neon. The endpoint accepts only fixed categories and bounded
-  numbers; it rejects arbitrary fields and never stores searches, locations,
-  account identifiers, IP addresses, or other user-entered content.
+  numbers and rejects arbitrary fields. Its aggregate table never stores
+  searches, locations, account identifiers, or other user-entered content.
 
 None of this is required to use the tool — everything gracefully falls
 back to local-only storage if auth/database env vars aren't set.
@@ -120,7 +140,7 @@ Environment Variables) for accounts/cloud sync to work:
 |---|---|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `api/auth-config.js` (returned to the client) |
 | `CLERK_SECRET_KEY` | `api/workspace.js` (server-side token verification) |
-| `DATABASE_URL` | `api/workspace.js` (Neon Postgres connection string) |
+| `DATABASE_URL` | `api/workspace.js` and `api/product-events.js` (Neon Postgres connection string) |
 
 Previously hosted on GitHub Pages; that's now disabled in favor of Vercel.
 
@@ -165,6 +185,7 @@ and workspace data stays local-only.
 | `og-image.png`                            | Social share preview image (1200×630)                  |
 | `robots.txt`                              | Crawler access rules + sitemap pointer                  |
 | `sitemap.xml`                             | XML sitemap for search engines                          |
+| `ROADMAP.md`                              | Delivered product phases and measurement scope          |
 | `package.json`                            | Dependencies for the `api/` serverless functions        |
 
 ## License
