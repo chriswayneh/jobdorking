@@ -135,11 +135,13 @@
 
   <section class="hero">
     <p class="kicker">Discover more. Apply first.</p>
+    <p class="hero-proof" aria-live="polite"><span>Made for</span> <strong id="proofRotator">remote engineering roles posted this week.</strong></p>
     <h1>Every job board. One search.</h1>
-    <p class="hero-sub">Start with a proven search recipe, then tune the roles, filters, and sources that fit your job hunt.</p>
+    <p class="persona-label">Choose a starting point</p>
+    <div class="persona-grid" id="personaGrid" aria-label="Choose a job-search starting point"></div>
   </section>
 
-  <section class="tool-panel">
+  <section class="tool-panel" id="searchTool">
     <div class="field recipe-field">
       <div class="field-heading">
         <div>
@@ -234,7 +236,10 @@
   <section class="result-panel">
     <div class="code-card">
       <div class="code-card-head">
-        <span class="code-card-label">Search query</span>
+        <div>
+          <span class="code-card-label">Live Google query</span>
+          <span class="code-card-hint">Updates as you tune titles, filters, and sources.</span>
+        </div>
         <button class="icon-btn" id="copyBtn" type="button" aria-label="Copy search query">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2"></rect>
@@ -242,7 +247,7 @@
           </svg>
         </button>
       </div>
-      <div class="code-card-body" id="queryText"></div>
+      <div class="code-card-body" id="queryText" aria-live="polite"></div>
     </div>
     <div class="result-actions">
       <button class="btn-save" id="saveSearchBtn" type="button">Save search</button>
@@ -373,6 +378,10 @@
   </footer>
 </div>
 
+<div class="mobile-open-bar" id="mobileOpenBar" hidden>
+  <button class="btn-open" id="mobileOpenBtn" type="button" disabled>Open in Google →</button>
+</div>
+
 <div class="toast" id="toast">Copied to clipboard</div>
 
 <script>
@@ -420,10 +429,18 @@
     { id: 'product-design', icon: '✦', title: 'Product & design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'] },
     { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
   ];
+  const PERSONAS = [
+    { id: 'software-engineer', icon: '⌘', title: 'Software engineer', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'] },
+    { id: 'product-design', icon: '✦', title: 'Product or design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'] },
+    { id: 'startup-hunter', icon: '↗', title: 'Startup hunter', copy: 'New roles at fast-moving teams using modern ATS platforms.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
+  ];
   const SAVED_SEARCHES_KEY = 'jobdorking.saved-searches.v1';
   const SEARCH_ACTIVITY_KEY = 'jobdorking.search-activity.v1';
   const DAILY_CHECKLIST_KEY = 'jobdorking.daily-checklist.v1';
   const siteGrid = document.getElementById('siteGrid');
+  const personaGrid = document.getElementById('personaGrid');
+  const searchTool = document.getElementById('searchTool');
+  const proofRotator = document.getElementById('proofRotator');
   const recipeGrid = document.getElementById('recipeGrid');
   const clearRecipeBtn = document.getElementById('clearRecipeBtn');
   const customSiteInput = document.getElementById('customSiteInput');
@@ -439,6 +456,8 @@
   const queryText = document.getElementById('queryText');
   const copyBtn = document.getElementById('copyBtn');
   const openBtn = document.getElementById('openBtn');
+  const mobileOpenBar = document.getElementById('mobileOpenBar');
+  const mobileOpenBtn = document.getElementById('mobileOpenBtn');
   const saveSearchBtn = document.getElementById('saveSearchBtn');
   const savedSearchesSection = document.getElementById('savedSearchesSection');
   const savedSearchList = document.getElementById('savedSearchList');
@@ -464,6 +483,7 @@
   let isCloudSyncing = false;
   let isApplyingCloudWorkspace = false;
   let cloudSyncTimer = null;
+  let hasScrolledPastOpenButton = false;
 
   SITES.forEach(function (site) {
     const btn = document.createElement('button');
@@ -490,6 +510,19 @@
       applyRecipe(recipe);
     });
     recipeGrid.appendChild(btn);
+  });
+
+  PERSONAS.forEach(function (persona) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'persona-card';
+    btn.innerHTML = '<span class="persona-icon" aria-hidden="true">' + persona.icon + '</span><span><span class="persona-title">' + persona.title + '</span><span class="persona-copy">' + persona.copy + '</span></span><span class="persona-action">Start here →</span>';
+    btn.addEventListener('click', function () {
+      applySearch(persona, null);
+      searchTool.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast(persona.title + ' search ready');
+    });
+    personaGrid.appendChild(btn);
   });
 
   function normalizeDomain(raw) {
@@ -681,6 +714,7 @@
     openBtn.disabled = !tokens;
     copyBtn.disabled = !tokens;
     saveSearchBtn.disabled = !tokens;
+    syncMobileOpenBar();
   }
 
   let toastTimer;
@@ -1120,12 +1154,47 @@
     showToast('Copied to clipboard');
   });
 
-  openBtn.addEventListener('click', function () {
+  function openCurrentSearch() {
     const tokens = buildTokens();
     if (!tokens) return;
     const q = tokensToPlain(tokens);
     window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener,noreferrer');
-  });
+  }
+
+  function syncMobileOpenBar() {
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    mobileOpenBtn.disabled = openBtn.disabled;
+    mobileOpenBar.hidden = !(isMobile && hasScrolledPastOpenButton && !openBtn.disabled);
+  }
+
+  if ('IntersectionObserver' in window) {
+    const openButtonObserver = new IntersectionObserver(function (entries) {
+      const entry = entries[0];
+      hasScrolledPastOpenButton = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      syncMobileOpenBar();
+    }, { threshold: 0 });
+    openButtonObserver.observe(openBtn);
+  }
+  window.addEventListener('resize', syncMobileOpenBar);
+
+  const proofStatements = [
+    'remote engineering roles posted this week.',
+    'product and design roles beyond one board.',
+    'startup jobs across Greenhouse, Lever, and Ashby.'
+  ];
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let proofIndex = 0;
+    window.setInterval(function () {
+      proofIndex = (proofIndex + 1) % proofStatements.length;
+      proofRotator.textContent = proofStatements[proofIndex];
+      proofRotator.classList.remove('is-changing');
+      void proofRotator.offsetWidth;
+      proofRotator.classList.add('is-changing');
+    }, 3600);
+  }
+
+  openBtn.addEventListener('click', openCurrentSearch);
+  mobileOpenBtn.addEventListener('click', openCurrentSearch);
 
   renderSavedSearches();
   renderWorkspace();
