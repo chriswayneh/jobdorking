@@ -534,6 +534,7 @@
   let selectedDays = 1;
   let activeRecipeId = null;
   let activeRecipeDetailId = null;
+  let suppressRecipeFocusPreview = false;
   let clerk = null;
   let isCloudSyncing = false;
   let isApplyingCloudWorkspace = false;
@@ -621,7 +622,11 @@
     Array.from(recipeGrid.children).forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
     if (returnFocus && previousRecipeId) {
       const previousButton = Array.from(recipeGrid.children).find(function (button) { return button.dataset.recipeId === previousRecipeId; });
-      if (previousButton) previousButton.focus();
+      if (previousButton) {
+        suppressRecipeFocusPreview = true;
+        previousButton.focus({ preventScroll: true });
+        window.requestAnimationFrame(function () { suppressRecipeFocusPreview = false; });
+      }
     }
   }
 
@@ -634,7 +639,9 @@
     btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = '<span class="recipe-icon" aria-hidden="true">' + recipe.icon + '</span><span class="recipe-title">' + recipe.title + '</span><span class="recipe-copy">' + recipe.copy + '</span>';
     btn.addEventListener('mouseenter', function () { showRecipeDetails(recipe, false); });
-    btn.addEventListener('focus', function () { showRecipeDetails(recipe, false); });
+    btn.addEventListener('focus', function () {
+      if (!suppressRecipeFocusPreview) showRecipeDetails(recipe, false);
+    });
     btn.addEventListener('click', function () {
       if (activeRecipeId === recipe.id) {
         resetSearch();
