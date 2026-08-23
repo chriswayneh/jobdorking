@@ -81,21 +81,6 @@ serverless API backed by [Neon](https://neon.tech) (serverless Postgres):
 None of this is required to use the tool — everything gracefully falls
 back to local-only storage if auth/database env vars aren't set.
 
-## Product measurement
-
-The five roadmap signals are stored as daily aggregate rows in
-`jobdorking_product_events`. Review totals and dimensions from the Neon SQL
-Editor with:
-
-```sql
-SELECT event_date, event_name, properties, event_count
-FROM jobdorking_product_events
-ORDER BY event_date DESC, event_name, event_count DESC;
-```
-
-This uses the existing database instead of Vercel Custom Events, which are
-not included on the project's Hobby plan.
-
 ## Design
 
 The visual system (color palette, Poppins type, pill-shaped buttons and
