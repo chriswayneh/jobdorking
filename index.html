@@ -159,6 +159,30 @@
         <button type="button" class="text-btn" id="clearRecipeBtn" hidden>Reset all</button>
       </div>
       <div class="recipe-grid" id="recipeGrid"></div>
+      <div class="recipe-detail" id="recipeDetail" role="region" aria-labelledby="recipeDetailTitle" hidden>
+        <div class="recipe-detail-head">
+          <div>
+            <span class="recipe-detail-kicker" id="recipeDetailStatus">Recipe preview</span>
+            <h3 id="recipeDetailTitle">Recipe breakdown</h3>
+          </div>
+          <button type="button" class="recipe-detail-close" id="recipeDetailCloseBtn" aria-label="Close recipe breakdown">×</button>
+        </div>
+        <div class="recipe-compare-grid">
+          <div class="recipe-compare-card manual-compare">
+            <span class="compare-label">Searching manually</span>
+            <strong class="compare-headline" id="manualCompareHeadline"></strong>
+            <ul class="compare-list" id="manualCompareList"></ul>
+          </div>
+          <div class="recipe-compare-card recipe-compare">
+            <span class="compare-label">With this recipe</span>
+            <strong class="compare-headline">One combined Google query</strong>
+            <ul class="compare-list" id="recipeCompareList"></ul>
+            <div class="recipe-detail-group"><span>Boards</span><div class="recipe-detail-chips" id="recipeDetailBoards"></div></div>
+            <div class="recipe-detail-group"><span>Operators</span><div class="recipe-detail-chips operator-chips" id="recipeDetailOperators"></div></div>
+            <div class="recipe-scope"><span>Directional result scope</span><strong id="recipeScopeLabel"></strong><small id="recipeScopeCopy"></small></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="field">
@@ -438,9 +462,9 @@
     { label: 'ZipRecruiter', value: 'site:ziprecruiter.com' }
   ];
   const RECIPES = [
-    { id: 'remote-tech', icon: '⌘', title: 'Remote tech', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'] },
-    { id: 'product-design', icon: '✦', title: 'Product & design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'] },
-    { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
+    { id: 'remote-tech', icon: '⌘', title: 'Remote tech', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'], scope: 'Focused', scopeCopy: 'Narrower, high-intent coverage using skills, seniority, recency, and exclusions.' },
+    { id: 'product-design', icon: '✦', title: 'Product & design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'], scope: 'Balanced', scopeCopy: 'Broader role coverage with recency, full-time, remote, and internship filters.' },
+    { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [], scope: 'Focused', scopeCopy: 'Recent startup-oriented coverage with recruiter and staffing-agency exclusions.' }
   ];
   const PERSONAS = [
     { id: 'software-engineer', icon: '⌘', title: 'Software engineer', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'] },
@@ -455,6 +479,17 @@
   const searchTool = document.getElementById('searchTool');
   const proofRotator = document.getElementById('proofRotator');
   const recipeGrid = document.getElementById('recipeGrid');
+  const recipeDetail = document.getElementById('recipeDetail');
+  const recipeDetailStatus = document.getElementById('recipeDetailStatus');
+  const recipeDetailTitle = document.getElementById('recipeDetailTitle');
+  const recipeDetailCloseBtn = document.getElementById('recipeDetailCloseBtn');
+  const manualCompareHeadline = document.getElementById('manualCompareHeadline');
+  const manualCompareList = document.getElementById('manualCompareList');
+  const recipeCompareList = document.getElementById('recipeCompareList');
+  const recipeDetailBoards = document.getElementById('recipeDetailBoards');
+  const recipeDetailOperators = document.getElementById('recipeDetailOperators');
+  const recipeScopeLabel = document.getElementById('recipeScopeLabel');
+  const recipeScopeCopy = document.getElementById('recipeScopeCopy');
   const clearRecipeBtn = document.getElementById('clearRecipeBtn');
   const customSiteInput = document.getElementById('customSiteInput');
   const addSiteBtn = document.getElementById('addSiteBtn');
@@ -498,6 +533,7 @@
   const toast = document.getElementById('toast');
   let selectedDays = 1;
   let activeRecipeId = null;
+  let activeRecipeDetailId = null;
   let clerk = null;
   let isCloudSyncing = false;
   let isApplyingCloudWorkspace = false;
@@ -514,18 +550,98 @@
     siteGrid.appendChild(btn);
   });
 
+  function replaceRecipeList(list, items) {
+    list.replaceChildren();
+    items.forEach(function (item) {
+      const entry = document.createElement('li');
+      entry.textContent = item;
+      list.appendChild(entry);
+    });
+  }
+  function replaceRecipeChips(container, items) {
+    container.replaceChildren();
+    items.forEach(function (item) {
+      const chip = document.createElement('span');
+      chip.className = 'recipe-detail-chip';
+      chip.textContent = item;
+      container.appendChild(chip);
+    });
+  }
+  function recipeOperatorLabels(recipe) {
+    const operators = [];
+    if (recipe.sites.length) operators.push('site:');
+    operators.push('intitle:');
+    if (recipe.sites.length > 1 || splitTerms(recipe.titles).length > 1) operators.push('OR');
+    if (recipe.days) operators.push('after:');
+    if (recipe.include || recipe.location || recipe.seniority || recipe.employment.length) operators.push('"phrase"');
+    if (recipe.exclude) operators.push('-"term"');
+    return operators;
+  }
+  function renderRecipeDetails(recipe) {
+    const titleCount = splitTerms(recipe.titles).length;
+    const boardCount = recipe.sites.length;
+    const manualSearchCount = Math.max(titleCount, 1) * Math.max(boardCount, 1);
+    const boardLabels = recipe.sites.map(function (value) {
+      const board = SITES.find(function (site) { return site.value === value; });
+      return board ? board.label : value.replace(/^site:/, '');
+    });
+    recipeDetailStatus.textContent = activeRecipeId === recipe.id ? 'Applied to your search' : 'Recipe preview';
+    recipeDetailTitle.textContent = recipe.title + ' breakdown';
+    manualCompareHeadline.textContent = manualSearchCount + (manualSearchCount === 1 ? ' separate search' : ' separate searches') + ' to recreate this coverage';
+    replaceRecipeList(manualCompareList, [
+      'Open ' + boardCount + (boardCount === 1 ? ' job board' : ' job boards'),
+      'Repeat the search for ' + titleCount + (titleCount === 1 ? ' job title' : ' job titles'),
+      'Reapply recency and filters on every board'
+    ]);
+    replaceRecipeList(recipeCompareList, [
+      'Search all ' + boardCount + ' sources at once',
+      'Combine ' + titleCount + (titleCount === 1 ? ' title' : ' titles') + ' in one query',
+      'Apply recency and selected filters together'
+    ]);
+    replaceRecipeChips(recipeDetailBoards, boardLabels);
+    replaceRecipeChips(recipeDetailOperators, recipeOperatorLabels(recipe));
+    recipeScopeLabel.textContent = recipe.scope;
+    recipeScopeCopy.textContent = recipe.scopeCopy + ' Directional only—not a live Google result count.';
+  }
+  function showRecipeDetails(recipe, shouldScroll) {
+    activeRecipeDetailId = recipe.id;
+    recipeDetail.hidden = false;
+    Array.from(recipeGrid.children).forEach(function (button) {
+      button.setAttribute('aria-expanded', String(button.dataset.recipeId === recipe.id));
+    });
+    renderRecipeDetails(recipe);
+    if (shouldScroll && window.matchMedia('(max-width: 480px)').matches) {
+      recipeDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+  function hideRecipeDetails(returnFocus) {
+    const previousRecipeId = activeRecipeDetailId;
+    activeRecipeDetailId = null;
+    recipeDetail.hidden = true;
+    Array.from(recipeGrid.children).forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
+    if (returnFocus && previousRecipeId) {
+      const previousButton = Array.from(recipeGrid.children).find(function (button) { return button.dataset.recipeId === previousRecipeId; });
+      if (previousButton) previousButton.focus();
+    }
+  }
+
   RECIPES.forEach(function (recipe) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'recipe-btn';
     btn.dataset.recipeId = recipe.id;
+    btn.setAttribute('aria-controls', 'recipeDetail');
+    btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = '<span class="recipe-icon" aria-hidden="true">' + recipe.icon + '</span><span class="recipe-title">' + recipe.title + '</span><span class="recipe-copy">' + recipe.copy + '</span>';
+    btn.addEventListener('mouseenter', function () { showRecipeDetails(recipe, false); });
+    btn.addEventListener('focus', function () { showRecipeDetails(recipe, false); });
     btn.addEventListener('click', function () {
       if (activeRecipeId === recipe.id) {
         resetSearch();
         showToast('Search reset');
         return;
       }
+      showRecipeDetails(recipe, true);
       applyRecipe(recipe);
     });
     recipeGrid.appendChild(btn);
@@ -537,11 +653,17 @@
     btn.className = 'persona-card';
     btn.innerHTML = '<span class="persona-icon" aria-hidden="true">' + persona.icon + '</span><span><span class="persona-title">' + persona.title + '</span><span class="persona-copy">' + persona.copy + '</span></span><span class="persona-action">Start here →</span>';
     btn.addEventListener('click', function () {
+      hideRecipeDetails(false);
       applySearch(persona, null);
       searchTool.scrollIntoView({ behavior: 'smooth', block: 'start' });
       showToast(persona.title + ' search ready');
     });
     personaGrid.appendChild(btn);
+  });
+
+  recipeDetailCloseBtn.addEventListener('click', function () { hideRecipeDetails(true); });
+  recipeDetail.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') hideRecipeDetails(true);
   });
 
   function normalizeDomain(raw) {
@@ -593,12 +715,17 @@
     activeRecipeId = recipeId;
     Array.from(recipeGrid.children).forEach(function (btn) { btn.classList.toggle('active', btn.dataset.recipeId === recipeId); });
     clearRecipeBtn.hidden = !recipeId;
+    if (activeRecipeDetailId) {
+      const detailRecipe = RECIPES.find(function (recipe) { return recipe.id === activeRecipeDetailId; });
+      if (detailRecipe) renderRecipeDetails(detailRecipe);
+    }
   }
   function onSearchChange() {
     setRecipeState(null);
     render();
   }
   function resetSearch() {
+    hideRecipeDetails(false);
     applySearch({
       titles: '', days: 1, sites: [], remote: false, include: '', exclude: '', location: '', seniority: '', employment: []
     }, null);

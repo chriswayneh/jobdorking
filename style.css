@@ -132,6 +132,28 @@ h1 { font-family: 'Poppins', sans-serif; font-size: 40px; line-height: 1.15; fon
 .recipe-icon { display: block; font-size: 18px; margin-bottom: 7px; }
 .recipe-title { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.25; }
 .recipe-copy { display: block; margin-top: 4px; color: var(--ink-dim); font-size: 10.5px; line-height: 1.35; }
+.recipe-detail { margin-top: 12px; padding: 16px; border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); }
+.recipe-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.recipe-detail-kicker { display: block; margin-bottom: 2px; color: var(--accent-text); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.recipe-detail h3 { margin: 0; font-size: 14px; line-height: 1.35; }
+.recipe-detail-close { width: 28px; height: 28px; flex: 0 0 28px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--ink-dim); font-size: 18px; line-height: 1; cursor: pointer; }
+.recipe-detail-close:hover { border-color: var(--accent); color: var(--accent-text); }
+.recipe-compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.recipe-compare-card { min-width: 0; padding: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.compare-label { display: block; margin-bottom: 4px; color: var(--ink-dim); font-size: 9px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.recipe-compare .compare-label { color: var(--accent-text); }
+.compare-headline { display: block; font-size: 11.5px; line-height: 1.4; }
+.compare-list { margin: 9px 0 0; padding-left: 16px; color: var(--ink-dim); font-size: 9.5px; line-height: 1.5; }
+.compare-list li + li { margin-top: 3px; }
+.recipe-detail-group { margin-top: 10px; }
+.recipe-detail-group > span, .recipe-scope > span { display: block; margin-bottom: 5px; color: var(--ink-dim); font-size: 8.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.recipe-detail-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.recipe-detail-chip { padding: 4px 7px; border-radius: 999px; background: var(--surface-2); color: var(--ink-dim); font-size: 8.5px; font-weight: 600; }
+.operator-chips .recipe-detail-chip { color: var(--accent-text); font-family: 'JetBrains Mono', monospace; }
+.recipe-scope { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.recipe-scope strong, .recipe-scope small { display: block; }
+.recipe-scope strong { color: var(--accent-text); font-size: 11px; }
+.recipe-scope small { margin-top: 2px; color: var(--ink-dim); font-size: 8.5px; line-height: 1.4; }
 
 input[type=text] {
   width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--ink);
@@ -252,6 +274,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   .recipe-btn { min-height: 0; display: grid; grid-template-columns: 28px 1fr; column-gap: 8px; align-items: center; }
   .recipe-icon { grid-row: span 2; margin: 0; }
   .recipe-copy { margin-top: 2px; }
+  .recipe-compare-grid { grid-template-columns: 1fr; }
   .persona-grid { grid-template-columns: 1fr; }
   .persona-card { min-height: 0; grid-template-columns: 25px minmax(0, 1fr) auto; align-items: center; }
   .persona-action { grid-column: auto; margin: 0; white-space: nowrap; }

@@ -12,7 +12,7 @@
 - Add a three-input, assumption-led time-saved calculator below the headline.
 - Replace the generic signed-out account prompt with a personalized checklist of unsynced saved searches, configured filters, and completed checklist items.
 
-## Phase 3 — Explain the advantage of recipes
+## Phase 3 — Explain the advantage of recipes (delivered in this release)
 
 - Add an accessible recipe detail drawer that compares manual searching with the selected recipe, showing covered boards and Google operators.
 - Add a directional scope indicator only if it can be supported without inventing Google result counts.
