@@ -489,7 +489,14 @@
     btn.className = 'recipe-btn';
     btn.dataset.recipeId = recipe.id;
     btn.innerHTML = '<span class="recipe-icon" aria-hidden="true">' + recipe.icon + '</span><span class="recipe-title">' + recipe.title + '</span><span class="recipe-copy">' + recipe.copy + '</span>';
-    btn.addEventListener('click', function () { applyRecipe(recipe); });
+    btn.addEventListener('click', function () {
+      if (activeRecipeId === recipe.id) {
+        resetSearch();
+        showToast('Search reset');
+        return;
+      }
+      applyRecipe(recipe);
+    });
     recipeGrid.appendChild(btn);
   });
 
