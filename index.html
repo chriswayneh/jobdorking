@@ -481,6 +481,10 @@
   const SAVED_SEARCHES_KEY = 'jobdorking.saved-searches.v1';
   const SEARCH_ACTIVITY_KEY = 'jobdorking.search-activity.v1';
   const DAILY_CHECKLIST_KEY = 'jobdorking.daily-checklist.v1';
+  const PRODUCT_EVENT_ENDPOINT = '/api/product-events';
+  const productEventQueue = new Map();
+  let productEventFlushTimer;
+  let queryChangeEventTimer;
   const siteGrid = document.getElementById('siteGrid');
   const personaGrid = document.getElementById('personaGrid');
   const searchTool = document.getElementById('searchTool');
@@ -719,6 +723,7 @@
     btn.addEventListener('click', function () {
       hideRecipeDetails(false);
       applySearch(persona, null);
+      queueProductEvent('persona_start', { persona: persona.id });
       searchTool.scrollIntoView({ behavior: 'smooth', block: 'start' });
       showToast(persona.title + ' search ready');
     });
@@ -787,6 +792,15 @@
   function onSearchChange() {
     setRecipeState(null);
     render();
+    clearTimeout(queryChangeEventTimer);
+    queryChangeEventTimer = setTimeout(function () {
+      const search = currentSearch();
+      queueProductEvent('query_changed', {
+        source_count: search.sites.length,
+        filter_count: configuredFilterCount(search),
+        has_titles: Boolean(search.titles)
+      });
+    }, 800);
   }
   function resetSearch() {
     hideRecipeDetails(false);
@@ -940,6 +954,40 @@
       Boolean(search.seniority),
       search.employment.length > 0
     ].filter(Boolean).length;
+  }
+  function queueProductEvent(name, data) {
+    const key = name + '|' + JSON.stringify(data || {});
+    const queued = productEventQueue.get(key);
+    if (queued) queued.count += 1;
+    else productEventQueue.set(key, { name: name, data: data || {}, count: 1 });
+    clearTimeout(productEventFlushTimer);
+    if (productEventQueue.size >= 15) {
+      flushProductEvents();
+      return;
+    }
+    productEventFlushTimer = setTimeout(flushProductEvents, 4000);
+  }
+  function flushProductEvents() {
+    if (!productEventQueue.size) return;
+    const events = Array.from(productEventQueue.values());
+    productEventQueue.clear();
+    clearTimeout(productEventFlushTimer);
+    fetch(PRODUCT_EVENT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events: events }),
+      credentials: 'omit',
+      keepalive: true
+    }).catch(function () {
+      // Analytics must never interrupt the search experience.
+    });
+  }
+  function searchEventData(origin, search) {
+    return {
+      origin: origin,
+      source_count: search.sites.length,
+      filter_count: configuredFilterCount(search)
+    };
   }
   function updateAccountLossSummary() {
     const savedCount = getSavedSearches().length;
@@ -1280,9 +1328,12 @@
       await addClerkScript('https://' + clerkDomain + '/npm/@clerk/clerk-js@6/dist/clerk.browser.js', { 'data-clerk-publishable-key': config.publishableKey });
       await window.Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
       clerk = window.Clerk;
-      function openSignIn() { clerk.openSignIn(); }
-      accountButton.addEventListener('click', openSignIn);
-      accountPromptButton.addEventListener('click', openSignIn);
+      function openSignIn(source) {
+        queueProductEvent('account_prompt_opened', { source: source });
+        clerk.openSignIn();
+      }
+      accountButton.addEventListener('click', function () { openSignIn('header'); });
+      accountPromptButton.addEventListener('click', function () { openSignIn('workspace-prompt'); });
       syncNowBtn.addEventListener('click', syncCloudWorkspace);
       exportWorkspaceBtn.addEventListener('click', exportWorkspace);
       deleteCloudDataBtn.addEventListener('click', deleteCloudData);
@@ -1331,6 +1382,7 @@
         if (!tokens) return;
         recordSearchRun(saved.id);
         window.open('https://www.google.com/search?q=' + encodeURIComponent(tokensToPlain(tokens)), '_blank', 'noopener,noreferrer');
+        queueProductEvent('google_open', searchEventData('saved-search', currentSearch()));
         showToast('Search run — activity updated');
       });
       const load = document.createElement('button');
@@ -1375,6 +1427,10 @@
     saved.unshift({ id: String(Date.now()), name: savedSearchName(search), query: query, search: search });
     if (storeSavedSearches(saved)) {
       renderSavedSearches();
+      queueProductEvent('search_saved', {
+        source_count: search.sites.length,
+        filter_count: configuredFilterCount(search)
+      });
       showToast('Search saved to this device');
     }
   }
@@ -1406,11 +1462,12 @@
     showToast('Copied to clipboard');
   });
 
-  function openCurrentSearch() {
+  function openCurrentSearch(origin) {
     const tokens = buildTokens();
     if (!tokens) return;
     const q = tokensToPlain(tokens);
     window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener,noreferrer');
+    queueProductEvent('google_open', searchEventData(origin, currentSearch()));
     recordSearchActivity(null);
     showToast('Search run — activity updated');
   }
@@ -1447,8 +1504,12 @@
     }, 3600);
   }
 
-  openBtn.addEventListener('click', openCurrentSearch);
-  mobileOpenBtn.addEventListener('click', openCurrentSearch);
+  openBtn.addEventListener('click', function () { openCurrentSearch('primary'); });
+  mobileOpenBtn.addEventListener('click', function () { openCurrentSearch('sticky-mobile'); });
+  window.addEventListener('pagehide', flushProductEvents);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flushProductEvents();
+  });
 
   renderSavedSearches();
   renderWorkspace();

@@ -22,7 +22,8 @@
 - Turn the job-board FAQ into a filterable board directory with one-click source selection.
 - Replace the weekly empty state with a GitHub-style seven-day activity heatmap and a contextual streak nudge.
 
-## Measurement
+## Measurement (delivered in this release)
 
-- Track persona-start selection, query changes, Google opens, saved searches, and account-prompt engagement before and after each phase.
-- Use these signals to prioritize the next phase rather than adding surface area for its own sake.
+- Aggregate persona starts, debounced query changes, Google opens, saved searches, and account-prompt engagement by day in the existing Neon database.
+- Store only approved categories and bounded counts — never job titles, keywords, locations, query strings, account identifiers, or other user-entered content.
+- Batch browser events so measurement remains lightweight and does not interrupt the search experience.

@@ -53,9 +53,28 @@ serverless API backed by [Neon](https://neon.tech) (serverless Postgres):
   workspace JSON, gated by a Clerk session token verified server-side
   (`CLERK_SECRET_KEY`) against a `jobdorking_workspaces` table
   (`DATABASE_URL`). Payloads are capped at 1MB; queries are parameterized.
+- `api/product-events.js` — batches five product signals into daily aggregate
+  counts in Neon. The endpoint accepts only fixed categories and bounded
+  numbers; it rejects arbitrary fields and never stores searches, locations,
+  account identifiers, IP addresses, or other user-entered content.
 
 None of this is required to use the tool — everything gracefully falls
 back to local-only storage if auth/database env vars aren't set.
+
+## Product measurement
+
+The five roadmap signals are stored as daily aggregate rows in
+`jobdorking_product_events`. Review totals and dimensions from the Neon SQL
+Editor with:
+
+```sql
+SELECT event_date, event_name, properties, event_count
+FROM jobdorking_product_events
+ORDER BY event_date DESC, event_name, event_count DESC;
+```
+
+This uses the existing database instead of Vercel Custom Events, which are
+not included on the project's Hobby plan.
 
 ## Design
 
@@ -137,6 +156,7 @@ and workspace data stays local-only.
 | `style.css`                               | Shared stylesheet across all pages                     |
 | `api/auth-config.js`                      | Serves the Clerk publishable key                       |
 | `api/workspace.js`                        | Cloud workspace sync (GET/PUT/DELETE)                   |
+| `api/product-events.js`                   | Privacy-conscious daily product-signal aggregation      |
 | `guide/index.html`                        | Google dorking cheat sheet                              |
 | `guide/linkedin-job-search/index.html`    | LinkedIn-specific search guide                          |
 | `guide/greenhouse-job-search/index.html`  | Greenhouse-specific search guide                        |
