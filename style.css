@@ -82,19 +82,14 @@ h1 { font-family: 'Poppins', sans-serif; font-size: 40px; line-height: 1.15; fon
 .hero-proof { min-height: 22px; margin: -6px 0 13px; color: var(--ink-dim); font-size: 13px; line-height: 1.5; }
 .hero-proof strong { color: var(--ink); }
 .hero-proof .is-changing { animation: proof-fade .35s ease; }
-.savings-calculator { margin: 0 0 18px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--accent-soft); }
-.savings-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.savings-eyebrow { display: block; margin-bottom: 2px; color: var(--accent-text); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.savings-heading h2 { margin: 0; font-size: 14px; line-height: 1.35; }
-.savings-output { color: var(--accent-text); font-size: 13px; font-weight: 700; text-align: right; }
-.savings-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 13px; }
-.savings-inputs label { color: var(--ink-dim); font-size: 10px; font-weight: 600; line-height: 1.35; }
-.savings-inputs input {
-  width: 100%; margin-top: 5px; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink);
-  font: 600 13px 'Poppins', sans-serif; transition: border-color .15s ease, box-shadow .15s ease;
-}
-.savings-inputs input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.savings-note { margin: 9px 0 0; color: var(--ink-dim); font-size: 10px; line-height: 1.45; }
+.savings-estimate { margin: 0 0 18px; padding: 15px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--accent-soft); }
+.savings-eyebrow { margin: 0 0 7px; color: var(--accent-text); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.savings-example { display: flex; align-items: center; gap: 9px; margin: 0; color: var(--ink-dim); font-size: 12px; line-height: 1.45; }
+.savings-example strong { color: var(--ink); font-size: 13px; }
+.savings-arrow { color: var(--accent-text); font-weight: 700; }
+.savings-method { margin-top: 8px; color: var(--ink-dim); font-size: 10px; }
+.savings-method summary { width: fit-content; color: var(--accent-text); font-weight: 600; cursor: pointer; }
+.savings-method p { margin: 6px 0 0; line-height: 1.45; }
 .persona-label { margin: 0 0 9px; color: var(--ink-dim); font-size: 12px; font-weight: 600; }
 .persona-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .persona-card {
@@ -260,9 +255,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
   .persona-grid { grid-template-columns: 1fr; }
   .persona-card { min-height: 0; grid-template-columns: 25px minmax(0, 1fr) auto; align-items: center; }
   .persona-action { grid-column: auto; margin: 0; white-space: nowrap; }
-  .savings-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
-  .savings-output { text-align: left; }
-  .savings-inputs { grid-template-columns: 1fr; }
+  .savings-example { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .savings-arrow { transform: rotate(90deg); }
   .filter-grid, .filter-row { grid-template-columns: 1fr; }
   .filter-grid > div:last-child { grid-column: auto; }
   .result-actions { flex-direction: column-reverse; align-items: stretch; }
