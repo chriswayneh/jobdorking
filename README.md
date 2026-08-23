@@ -81,18 +81,6 @@ serverless API backed by [Neon](https://neon.tech) (serverless Postgres):
 None of this is required to use the tool — everything gracefully falls
 back to local-only storage if auth/database env vars aren't set.
 
-## Design
-
-The visual system (color palette, Poppins type, pill-shaped buttons and
-inputs) was modeled after [similarweb.com](https://www.similarweb.com/)'s
-brand — brand blue (`#2563EB`) accent, cyan secondary highlight, and fully
-rounded controls. Both light and dark themes are supported and follow the
-system color-scheme preference by default, with a manual toggle in the header.
-
-The header logo is an inline SVG (a shield + magnifying-glass badge in the
-accent color) rather than a raster image, so it stays crisp at any size and
-needs no external hosting.
-
 ## SEO
 
 The site is set up for organic discovery and social sharing:
