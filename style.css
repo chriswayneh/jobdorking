@@ -207,16 +207,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .site-footer a { color: var(--accent-text); text-decoration: none; }
 .site-footer a:hover { text-decoration: underline; }
 
-.contact-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-.contact-icon {
-  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  border: 1px solid var(--border); background: var(--surface); color: var(--ink-dim);
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color .15s ease, color .15s ease;
-}
-.contact-icon:hover { border-color: var(--accent); color: var(--accent-text); }
-.contact-icon svg { width: 16px; height: 16px; }
-
 .toast {
   position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(10px);
   background: var(--accent); color: var(--accent-contrast); padding: 10px 18px; border-radius: 999px;
