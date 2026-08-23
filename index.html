@@ -137,6 +137,21 @@
     <p class="kicker">Discover more. Apply first.</p>
     <p class="hero-proof" aria-live="polite"><span>Made for</span> <strong id="proofRotator">remote engineering roles posted this week.</strong></p>
     <h1>Every job board. One search.</h1>
+    <section class="savings-calculator" aria-labelledby="savingsHeading">
+      <div class="savings-heading">
+        <div>
+          <span class="savings-eyebrow">Your time back</span>
+          <h2 id="savingsHeading">Estimate your weekly savings</h2>
+        </div>
+        <output class="savings-output" id="savingsOutput" aria-live="polite">About 3.3 hours saved</output>
+      </div>
+      <div class="savings-inputs">
+        <label>Searches per week<input type="number" id="weeklySearchesInput" min="1" max="30" value="5" inputmode="numeric"></label>
+        <label>Boards per search<input type="number" id="boardsPerSearchInput" min="1" max="20" value="6" inputmode="numeric"></label>
+        <label>Minutes per board<input type="number" id="minutesPerBoardInput" min="1" max="60" value="8" inputmode="numeric"></label>
+      </div>
+      <p class="savings-note">Estimate compares checking each board separately with running one combined search.</p>
+    </section>
     <p class="persona-label">Choose a starting point</p>
     <div class="persona-grid" id="personaGrid" aria-label="Choose a job-search starting point"></div>
   </section>
@@ -295,10 +310,15 @@
   </section>
 
   <section class="account-prompt" id="accountPrompt" hidden>
-    <div>
+    <div class="account-prompt-main">
       <p class="section-kicker">Optional account</p>
-      <h2>Take your search workspace with you.</h2>
-      <p>Sign in to securely back up saved searches, daily activity, and your checklist across devices.</p>
+      <h2>What you’d lose without an account</h2>
+      <p>This workspace stays in this browser, but it won’t follow you to another device or survive cleared site data.</p>
+      <ul class="account-loss-list" aria-label="Workspace data currently stored only on this device">
+        <li class="account-loss-item" id="savedSearchesLossItem"><span class="loss-check" aria-hidden="true">✓</span><span><strong id="savedSearchesLossCount">0 saved searches</strong><small>Only stored on this device</small></span></li>
+        <li class="account-loss-item" id="filtersLossItem"><span class="loss-check" aria-hidden="true">✓</span><span><strong id="filtersLossCount">0 filters configured</strong><small>Your current search setup</small></span></li>
+        <li class="account-loss-item" id="checklistLossItem"><span class="loss-check" aria-hidden="true">✓</span><span><strong id="checklistLossCount">0 of 3 daily steps checked</strong><small>Today’s progress</small></span></li>
+      </ul>
     </div>
     <button type="button" class="btn-sync" id="accountPromptButton">Sign in to sync</button>
   </section>
@@ -441,6 +461,10 @@
   const personaGrid = document.getElementById('personaGrid');
   const searchTool = document.getElementById('searchTool');
   const proofRotator = document.getElementById('proofRotator');
+  const weeklySearchesInput = document.getElementById('weeklySearchesInput');
+  const boardsPerSearchInput = document.getElementById('boardsPerSearchInput');
+  const minutesPerBoardInput = document.getElementById('minutesPerBoardInput');
+  const savingsOutput = document.getElementById('savingsOutput');
   const recipeGrid = document.getElementById('recipeGrid');
   const clearRecipeBtn = document.getElementById('clearRecipeBtn');
   const customSiteInput = document.getElementById('customSiteInput');
@@ -471,6 +495,12 @@
   const userButton = document.getElementById('userButton');
   const accountPrompt = document.getElementById('accountPrompt');
   const accountPromptButton = document.getElementById('accountPromptButton');
+  const savedSearchesLossItem = document.getElementById('savedSearchesLossItem');
+  const savedSearchesLossCount = document.getElementById('savedSearchesLossCount');
+  const filtersLossItem = document.getElementById('filtersLossItem');
+  const filtersLossCount = document.getElementById('filtersLossCount');
+  const checklistLossItem = document.getElementById('checklistLossItem');
+  const checklistLossCount = document.getElementById('checklistLossCount');
   const cloudSyncSection = document.getElementById('cloudSyncSection');
   const cloudSyncStatus = document.getElementById('cloudSyncStatus');
   const syncNowBtn = document.getElementById('syncNowBtn');
@@ -524,6 +554,23 @@
     });
     personaGrid.appendChild(btn);
   });
+
+  function calculatorValue(input, maximum) {
+    const value = Number(input.value);
+    return Number.isFinite(value) ? Math.min(Math.max(value, 0), maximum) : 0;
+  }
+  function renderSavingsEstimate() {
+    const searches = calculatorValue(weeklySearchesInput, 30);
+    const boards = calculatorValue(boardsPerSearchInput, 20);
+    const minutes = calculatorValue(minutesPerBoardInput, 60);
+    const hours = searches * Math.max(boards - 1, 0) * minutes / 60;
+    const roundedHours = Math.round(hours * 10) / 10;
+    savingsOutput.textContent = roundedHours ? 'About ' + roundedHours + (roundedHours === 1 ? ' hour saved' : ' hours saved') : 'No time saved yet';
+  }
+  [weeklySearchesInput, boardsPerSearchInput, minutesPerBoardInput].forEach(function (input) {
+    input.addEventListener('input', renderSavingsEstimate);
+  });
+  renderSavingsEstimate();
 
   function normalizeDomain(raw) {
     const domain = raw.trim().replace(/^https?:\/\//i, '').split('/')[0].split('?')[0];
@@ -715,6 +762,34 @@
     copyBtn.disabled = !tokens;
     saveSearchBtn.disabled = !tokens;
     syncMobileOpenBar();
+    updateAccountLossSummary();
+  }
+
+  function configuredFilterCount(search) {
+    return [
+      search.days !== 1,
+      search.sites.length > 0,
+      search.remote,
+      Boolean(search.include),
+      Boolean(search.exclude),
+      Boolean(search.location),
+      Boolean(search.seniority),
+      search.employment.length > 0
+    ].filter(Boolean).length;
+  }
+  function updateAccountLossSummary() {
+    const savedCount = getSavedSearches().length;
+    const filterCount = configuredFilterCount(currentSearch());
+    const checklistState = getChecklistState();
+    const today = localDateKey(new Date());
+    const ranSearchToday = getActivity().some(function (item) { return item.date === today; });
+    const checklistCount = Number(ranSearchToday) + Number(Boolean(checklistState.completed['review-results'])) + Number(Boolean(checklistState.completed['plan-next-step']));
+    savedSearchesLossCount.textContent = savedCount + (savedCount === 1 ? ' saved search' : ' saved searches');
+    filtersLossCount.textContent = filterCount + (filterCount === 1 ? ' filter configured' : ' filters configured');
+    checklistLossCount.textContent = checklistCount + ' of 3 daily steps checked';
+    savedSearchesLossItem.classList.toggle('has-value', savedCount > 0);
+    filtersLossItem.classList.toggle('has-value', filterCount > 0);
+    checklistLossItem.classList.toggle('has-value', checklistCount > 0);
   }
 
   let toastTimer;
@@ -859,6 +934,7 @@
       bar.appendChild(label);
       weeklyChart.appendChild(bar);
     });
+    updateAccountLossSummary();
   }
   function recordSearchRun(savedId) {
     const now = new Date();
@@ -1109,6 +1185,7 @@
       card.appendChild(actions);
       savedSearchList.appendChild(card);
     });
+    updateAccountLossSummary();
   }
   function saveCurrentSearch() {
     const tokens = buildTokens();

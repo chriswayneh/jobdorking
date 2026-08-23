@@ -7,7 +7,7 @@
 - Make the existing real-time query output an explicit live preview.
 - Keep the Google action available on mobile after visitors scroll past the primary button.
 
-## Phase 2 — Personal value and account motivation
+## Phase 2 — Personal value and account motivation (delivered in this release)
 
 - Add a three-input, assumption-led time-saved calculator below the headline.
 - Replace the generic signed-out account prompt with a personalized checklist of unsynced saved searches, configured filters, and completed checklist items.
