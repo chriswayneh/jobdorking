@@ -321,7 +321,8 @@
           </div>
           <span class="activity-total" id="weeklyActivityTotal">0</span>
         </div>
-        <div class="weekly-chart" id="weeklyChart" aria-label="Searches run during the last seven days"></div>
+        <div class="weekly-heatmap" id="weeklyChart" aria-label="Searches run during the current week"></div>
+        <p class="streak-nudge" id="weeklyActivityNudge">Run 1 search today to start your streak.</p>
       </div>
     </div>
   </section>
@@ -392,7 +393,13 @@
       </details>
       <details class="faq-item">
         <summary>Which job boards can JobDorking search?</summary>
-        <p>LinkedIn, Indeed, Dice, Greenhouse, Lever, Ashby, Workday, and ZipRecruiter out of the box. Leave every source unchecked to search all of Google, unrestricted to any site.</p>
+        <div class="board-directory">
+          <label class="visually-hidden" for="boardDirectoryFilter">Filter job boards</label>
+          <input class="board-directory-filter" type="search" id="boardDirectoryFilter" placeholder="Filter job boards…" autocomplete="off">
+          <div class="board-directory-grid" id="boardDirectoryGrid"></div>
+          <p class="board-directory-empty" id="boardDirectoryEmpty" hidden>No matching job boards.</p>
+          <p class="board-directory-note">Add a board directly to Sources above. Leave every source unchecked to search all of Google.</p>
+        </div>
       </details>
       <details class="faq-item">
         <summary>Does JobDorking scrape or store job listings?</summary>
@@ -452,14 +459,14 @@
   applyTheme();
 
   const SITES = [
-    { label: 'LinkedIn', value: 'site:linkedin.com/jobs' },
-    { label: 'Indeed', value: 'site:indeed.com' },
-    { label: 'Dice', value: 'site:dice.com' },
-    { label: 'Greenhouse', value: 'site:boards.greenhouse.io' },
-    { label: 'Lever', value: 'site:jobs.lever.co' },
-    { label: 'Ashby', value: 'site:jobs.ashbyhq.com' },
-    { label: 'Workday', value: 'site:myworkdayjobs.com' },
-    { label: 'ZipRecruiter', value: 'site:ziprecruiter.com' }
+    { label: 'LinkedIn', mark: 'in', value: 'site:linkedin.com/jobs' },
+    { label: 'Indeed', mark: 'I', value: 'site:indeed.com' },
+    { label: 'Dice', mark: 'D', value: 'site:dice.com' },
+    { label: 'Greenhouse', mark: 'G', value: 'site:boards.greenhouse.io' },
+    { label: 'Lever', mark: 'L', value: 'site:jobs.lever.co' },
+    { label: 'Ashby', mark: 'A', value: 'site:jobs.ashbyhq.com' },
+    { label: 'Workday', mark: 'W', value: 'site:myworkdayjobs.com' },
+    { label: 'ZipRecruiter', mark: 'Z', value: 'site:ziprecruiter.com' }
   ];
   const RECIPES = [
     { id: 'remote-tech', icon: '⌘', title: 'Remote tech', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'], scope: 'Focused', scopeCopy: 'Narrower, high-intent coverage using skills, seniority, recency, and exclusions.' },
@@ -515,6 +522,10 @@
   const weeklyChart = document.getElementById('weeklyChart');
   const weeklyActivityLabel = document.getElementById('weeklyActivityLabel');
   const weeklyActivityTotal = document.getElementById('weeklyActivityTotal');
+  const weeklyActivityNudge = document.getElementById('weeklyActivityNudge');
+  const boardDirectoryFilter = document.getElementById('boardDirectoryFilter');
+  const boardDirectoryGrid = document.getElementById('boardDirectoryGrid');
+  const boardDirectoryEmpty = document.getElementById('boardDirectoryEmpty');
   const accountButton = document.getElementById('accountButton');
   const userButton = document.getElementById('userButton');
   const accountPrompt = document.getElementById('accountPrompt');
@@ -550,6 +561,52 @@
     btn.addEventListener('click', function () { btn.classList.toggle('active'); onSearchChange(); });
     siteGrid.appendChild(btn);
   });
+
+  function renderBoardDirectory() {
+    const filter = boardDirectoryFilter.value.trim().toLowerCase();
+    const matchingSites = SITES.filter(function (site) {
+      return !filter || site.label.toLowerCase().includes(filter) || site.value.toLowerCase().includes(filter);
+    });
+    boardDirectoryGrid.replaceChildren();
+    matchingSites.forEach(function (site) {
+      const sourcePill = Array.from(siteGrid.querySelectorAll('[data-value]')).find(function (pill) { return pill.dataset.value === site.value; });
+      const isSelected = Boolean(sourcePill && sourcePill.classList.contains('active'));
+      const card = document.createElement('div');
+      card.className = 'board-directory-card' + (isSelected ? ' is-added' : '');
+      const identity = document.createElement('div');
+      identity.className = 'board-directory-identity';
+      const mark = document.createElement('span');
+      mark.className = 'board-mark';
+      mark.textContent = site.mark;
+      mark.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('span');
+      copy.className = 'board-directory-copy';
+      const name = document.createElement('strong');
+      name.textContent = site.label;
+      const domain = document.createElement('small');
+      domain.textContent = site.value.replace(/^site:/, '');
+      copy.appendChild(name);
+      copy.appendChild(domain);
+      identity.appendChild(mark);
+      identity.appendChild(copy);
+      const addButton = document.createElement('button');
+      addButton.type = 'button';
+      addButton.className = 'board-add-btn';
+      addButton.textContent = isSelected ? 'Added' : 'Add to Sources';
+      addButton.disabled = isSelected;
+      addButton.addEventListener('click', function () {
+        if (!sourcePill) return;
+        sourcePill.classList.add('active');
+        onSearchChange();
+        showToast(site.label + ' added to Sources');
+      });
+      card.appendChild(identity);
+      card.appendChild(addButton);
+      boardDirectoryGrid.appendChild(card);
+    });
+    boardDirectoryEmpty.hidden = matchingSites.length > 0;
+  }
+  boardDirectoryFilter.addEventListener('input', renderBoardDirectory);
 
   function replaceRecipeList(list, items) {
     list.replaceChildren();
@@ -869,6 +926,7 @@
     saveSearchBtn.disabled = !tokens;
     syncMobileOpenBar();
     updateAccountLossSummary();
+    renderBoardDirectory();
   }
 
   function configuredFilterCount(search) {
@@ -978,7 +1036,7 @@
     const hasRunToday = activity.some(function (item) { return item.date === today; });
     const checklistState = getChecklistState();
     const items = [
-      { id: 'run-search', label: 'Run a saved search', hint: hasRunToday ? 'Done — nice momentum.' : 'Marked automatically when you run a saved search.', checked: hasRunToday, automatic: true },
+      { id: 'run-search', label: 'Run a search', hint: hasRunToday ? 'Done — nice momentum.' : 'Marked automatically when you open Google from JobDorking.', checked: hasRunToday, automatic: true },
       { id: 'review-results', label: 'Review fresh results', hint: 'Save promising roles outside JobDorking.', checked: Boolean(checklistState.completed['review-results']) },
       { id: 'plan-next-step', label: 'Choose your next step', hint: 'Apply, follow up, or refine tomorrow’s search.', checked: Boolean(checklistState.completed['plan-next-step']) }
     ];
@@ -1008,52 +1066,63 @@
       dailyChecklist.appendChild(row);
     });
     const week = [];
-    for (let offset = 6; offset >= 0; offset -= 1) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - offset);
+    const todayIndex = (now.getDay() + 6) % 7;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - todayIndex);
+    weekStart.setHours(0, 0, 0, 0);
+    for (let offset = 0; offset < 7; offset += 1) {
+      const date = new Date(weekStart);
+      date.setDate(weekStart.getDate() + offset);
       const dateKey = localDateKey(date);
-      week.push({ date: date, key: dateKey, count: activity.filter(function (item) { return item.date === dateKey; }).length });
+      week.push({ date: date, key: dateKey, count: activity.filter(function (item) { return item.date === dateKey; }).length, isFuture: offset > todayIndex });
     }
     const total = week.reduce(function (sum, day) { return sum + day.count; }, 0);
-    const maximum = Math.max.apply(null, week.map(function (day) { return day.count; }).concat([1]));
+    let currentStreak = 0;
+    for (let index = todayIndex; index >= 0 && week[index].count > 0; index -= 1) currentStreak += 1;
+    let previousStreak = 0;
+    for (let index = todayIndex - 1; index >= 0 && week[index].count > 0; index -= 1) previousStreak += 1;
     weeklyActivityTotal.textContent = total;
-    weeklyActivityLabel.textContent = total ? total + (total === 1 ? ' search run in the last 7 days.' : ' searches run in the last 7 days.') : 'No searches run this week yet.';
+    weeklyActivityLabel.textContent = total ? total + (total === 1 ? ' search run this week.' : ' searches run this week.') : 'No searches run this week yet.';
+    if (week[todayIndex].count > 0) {
+      weeklyActivityNudge.textContent = currentStreak > 1 ? currentStreak + '-day streak — nice momentum.' : 'Today is active — come back tomorrow to build your streak.';
+    } else {
+      weeklyActivityNudge.textContent = previousStreak ? 'Run 1 search today to keep your ' + previousStreak + '-day streak.' : 'Run 1 search today to start your streak.';
+    }
     weeklyChart.replaceChildren();
     week.forEach(function (day) {
-      const bar = document.createElement('div');
-      bar.className = 'day-bar';
-      bar.title = day.date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ': ' + day.count + (day.count === 1 ? ' search' : ' searches');
-      const count = document.createElement('span');
-      count.className = 'bar-count';
-      count.textContent = day.count || '';
-      const track = document.createElement('div');
-      track.className = 'bar-track';
-      const fill = document.createElement('div');
-      fill.className = 'bar-fill';
-      fill.style.height = (day.count ? Math.max(12, (day.count / maximum) * 100) : 3) + '%';
-      track.appendChild(fill);
+      const dayLabel = day.date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }) + ': ' + day.count + (day.count === 1 ? ' search' : ' searches');
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-day' + (day.isFuture ? ' is-future' : '') + (day.key === today ? ' is-today' : '');
+      cell.title = dayLabel;
+      cell.setAttribute('role', 'img');
+      cell.setAttribute('aria-label', dayLabel);
+      const square = document.createElement('span');
+      square.className = 'heatmap-square level-' + Math.min(day.count, 4);
+      square.textContent = day.count || '';
       const label = document.createElement('span');
-      label.className = 'bar-label';
+      label.className = 'heatmap-label';
       label.textContent = day.date.toLocaleDateString([], { weekday: 'narrow' });
-      bar.appendChild(count);
-      bar.appendChild(track);
-      bar.appendChild(label);
-      weeklyChart.appendChild(bar);
+      cell.appendChild(square);
+      cell.appendChild(label);
+      weeklyChart.appendChild(cell);
     });
     updateAccountLossSummary();
   }
-  function recordSearchRun(savedId) {
+  function recordSearchActivity(searchId) {
     const now = new Date();
+    const activity = getActivity();
+    activity.push({ date: localDateKey(now), searchId: searchId || null, timestamp: now.toISOString() });
+    storeActivity(activity);
+    renderWorkspace();
+  }
+  function recordSearchRun(savedId) {
     const searches = getSavedSearches();
     const saved = searches.find(function (item) { return item.id === savedId; });
     if (!saved) return;
-    saved.lastRunAt = now.toISOString();
+    saved.lastRunAt = new Date().toISOString();
     storeSavedSearches(searches);
-    const activity = getActivity();
-    activity.push({ date: localDateKey(now), searchId: savedId, timestamp: now.toISOString() });
-    storeActivity(activity);
     renderSavedSearches();
-    renderWorkspace();
+    recordSearchActivity(savedId);
   }
   function getLocalWorkspace() {
     return { savedSearches: getSavedSearches(), activity: getActivity(), checklist: getChecklistState() };
@@ -1342,6 +1411,8 @@
     if (!tokens) return;
     const q = tokensToPlain(tokens);
     window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener,noreferrer');
+    recordSearchActivity(null);
+    showToast('Search run — activity updated');
   }
 
   function syncMobileOpenBar() {
