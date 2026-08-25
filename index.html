@@ -145,8 +145,6 @@
         <p>Assumes 8 minutes per board. One combined search replaces five repeated board checks in each session.</p>
       </details>
     </section>
-    <p class="persona-label">Choose a starting point</p>
-    <div class="persona-grid" id="personaGrid" aria-label="Choose a job-search starting point"></div>
   </section>
 
   <section class="tool-panel" id="searchTool">
@@ -473,11 +471,6 @@
     { id: 'product-design', icon: '✦', title: 'Product & design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'], scope: 'Balanced', scopeCopy: 'Broader role coverage with recency, full-time, remote, and internship filters.' },
     { id: 'startup-fresh', icon: '↗', title: 'Fresh startup roles', copy: 'New postings from Greenhouse, Lever, and Ashby.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [], scope: 'Focused', scopeCopy: 'Recent startup-oriented coverage with recruiter and staffing-agency exclusions.' }
   ];
-  const PERSONAS = [
-    { id: 'software-engineer', icon: '⌘', title: 'Software engineer', copy: 'Fresh engineering roles from modern ATS boards.', titles: 'Software Engineer, Frontend Engineer', days: 7, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: true, include: 'React, TypeScript', exclude: 'intern', location: '', seniority: 'senior', employment: ['full time'] },
-    { id: 'product-design', icon: '✦', title: 'Product or design', copy: 'Product, UX, and design roles across trusted boards.', titles: 'Product Manager, Product Designer, UX Designer', days: 7, sites: ['site:linkedin.com/jobs', 'site:boards.greenhouse.io', 'site:jobs.lever.co'], remote: true, include: '', exclude: 'intern', location: '', seniority: '', employment: ['full time'] },
-    { id: 'startup-hunter', icon: '↗', title: 'Startup hunter', copy: 'New roles at fast-moving teams using modern ATS platforms.', titles: 'Software Engineer, Product Manager', days: 3, sites: ['site:boards.greenhouse.io', 'site:jobs.lever.co', 'site:jobs.ashbyhq.com'], remote: false, include: 'startup', exclude: 'staffing agency, recruiter', location: '', seniority: '', employment: [] }
-  ];
   const SAVED_SEARCHES_KEY = 'jobdorking.saved-searches.v1';
   const SEARCH_ACTIVITY_KEY = 'jobdorking.search-activity.v1';
   const DAILY_CHECKLIST_KEY = 'jobdorking.daily-checklist.v1';
@@ -486,8 +479,6 @@
   let productEventFlushTimer;
   let queryChangeEventTimer;
   const siteGrid = document.getElementById('siteGrid');
-  const personaGrid = document.getElementById('personaGrid');
-  const searchTool = document.getElementById('searchTool');
   const proofRotator = document.getElementById('proofRotator');
   const recipeGrid = document.getElementById('recipeGrid');
   const recipeDetail = document.getElementById('recipeDetail');
@@ -711,23 +702,9 @@
       }
       showRecipeDetails(recipe, true);
       applyRecipe(recipe);
+      queueProductEvent('recipe_applied', { recipe: recipe.id });
     });
     recipeGrid.appendChild(btn);
-  });
-
-  PERSONAS.forEach(function (persona) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'persona-card';
-    btn.innerHTML = '<span class="persona-icon" aria-hidden="true">' + persona.icon + '</span><span><span class="persona-title">' + persona.title + '</span><span class="persona-copy">' + persona.copy + '</span></span><span class="persona-action">Start here →</span>';
-    btn.addEventListener('click', function () {
-      hideRecipeDetails(false);
-      applySearch(persona, null);
-      queueProductEvent('persona_start', { persona: persona.id });
-      searchTool.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      showToast(persona.title + ' search ready');
-    });
-    personaGrid.appendChild(btn);
   });
 
   recipeDetailCloseBtn.addEventListener('click', function () { hideRecipeDetails(true); });
