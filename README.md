@@ -10,10 +10,8 @@ works without an account; optional sign-in syncs the workspace across devices.
 
 ## Current product
 
-- **Persona starting points** for software engineers, product/design
-  candidates, and startup hunters reduce the blank-page problem.
-- **Search recipes with explainers** prefill proven combinations and compare
-  manual searching with the boards and operators used by each recipe.
+- **One clear starting point:** Search recipes prefill proven combinations and
+  compare manual searching with the boards and operators used by each recipe.
 - **Power filters and a live query preview** cover titles, recency, sources,
   remote work, location, seniority, employment type, included terms, and
   excluded terms.
@@ -42,7 +40,7 @@ content for organic discovery.
 
 ## How it works
 
-1. Choose a persona or search recipe, or start with a blank search.
+1. Choose a search recipe or start with a blank search.
 2. Tune comma-separated job titles, posting recency, supported boards or a
    custom domain, and any optional power filters.
 3. Review the human-readable Google query as it updates in real time.

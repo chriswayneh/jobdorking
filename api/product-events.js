@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 
 const MAX_BATCH_SIZE = 20;
 const MAX_REQUEST_BYTES = 8_192;
-const PERSONAS = new Set(['software-engineer', 'product-design', 'startup-hunter']);
+const RECIPES = new Set(['remote-tech', 'product-design', 'startup-fresh']);
 const GOOGLE_OPEN_ORIGINS = new Set(['primary', 'sticky-mobile', 'saved-search']);
 const ACCOUNT_PROMPT_SOURCES = new Set(['header', 'workspace-prompt']);
 
@@ -38,9 +38,9 @@ function normalizeEvent(rawEvent) {
   let properties;
 
   switch (rawEvent.name) {
-    case 'persona_start': {
-      if (!PERSONAS.has(data.persona)) return null;
-      properties = { persona: data.persona };
+    case 'recipe_applied': {
+      if (!RECIPES.has(data.recipe)) return null;
+      properties = { recipe: data.recipe };
       break;
     }
     case 'query_changed': {

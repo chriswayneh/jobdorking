@@ -2,7 +2,7 @@
 
 ## Phase 1 — First-session activation (delivered in this release)
 
-- Replace the generic hero paragraph with three persona-based starting points.
+- Consolidate guided onboarding around Search recipes as the single starting point; persona cards were retired to remove a duplicate entry path.
 - Add rotating, role-specific proof below the hero tagline.
 - Make the existing real-time query output an explicit live preview.
 - Keep the Google action available on mobile after visitors scroll past the primary button.
@@ -24,6 +24,6 @@
 
 ## Measurement (delivered in this release)
 
-- Aggregate persona starts, debounced query changes, Google opens, saved searches, and account-prompt engagement by day in the existing Neon database.
+- Aggregate recipe applications, debounced query changes, Google opens, saved searches, and account-prompt engagement by day in the existing Neon database.
 - Store only approved categories and bounded counts — never job titles, keywords, locations, query strings, account identifiers, or other user-entered content.
 - Batch browser events so measurement remains lightweight and does not interrupt the search experience.
