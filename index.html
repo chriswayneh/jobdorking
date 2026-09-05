@@ -427,6 +427,40 @@
 <div class="toast" id="toast">Copied to clipboard</div>
 
 <script>
+  // Progressive motion layer: reveal classes are added by JS so content stays visible without it
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-in');
+        io.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+
+    function arm(selector, className) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        el.classList.add(className);
+        io.observe(el);
+      });
+    }
+    arm('.hero, .tool-panel, .result-panel, .saved-section, .workspace-section, .content-section, .site-footer', 'reveal');
+    arm('.steps, .faq-list', 'reveal-stagger');
+
+    const queryText = document.getElementById('queryText');
+    if (queryText) {
+      new MutationObserver(function () {
+        queryText.classList.remove('is-updating');
+        void queryText.offsetWidth;
+        queryText.classList.add('is-updating');
+      }).observe(queryText, { childList: true, characterData: true, subtree: true });
+    }
+  })();
+</script>
+
+<script>
   // Theme handling: follows system preference by default, manual toggle overrides for the session
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
