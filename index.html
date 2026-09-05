@@ -794,7 +794,6 @@
   function setRecipeState(recipeId) {
     activeRecipeId = recipeId;
     Array.from(recipeGrid.children).forEach(function (btn) { btn.classList.toggle('active', btn.dataset.recipeId === recipeId); });
-    clearRecipeBtn.hidden = !recipeId;
     if (activeRecipeDetailId) {
       const detailRecipe = RECIPES.find(function (recipe) { return recipe.id === activeRecipeDetailId; });
       if (detailRecipe) renderRecipeDetails(detailRecipe);
@@ -941,6 +940,7 @@
 
   function render() {
     const tokens = buildTokens();
+    const search = currentSearch();
     if (tokens) {
       queryText.innerHTML = tokensToHTML(tokens);
     } else {
@@ -949,6 +949,7 @@
     openBtn.disabled = !tokens;
     copyBtn.disabled = !tokens;
     saveSearchBtn.disabled = !tokens;
+    clearRecipeBtn.hidden = !search.titles && configuredFilterCount(search) === 0;
     syncMobileOpenBar();
     updateAccountLossSummary();
     renderBoardDirectory();
